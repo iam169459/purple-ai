@@ -21,8 +21,8 @@ class ScreenAwareness:
         self.last_app = None
         self.last_activity = None
         self.last_question_time = 0
-        self.question_interval = 300  # Ask question every 5 minutes if idle
-        self.idle_threshold = 300  # Consider idle after 5 minutes
+        self.question_interval = 600  # Ask question every 10 minutes if idle
+        self.idle_threshold = 600  # Consider idle after 10 minutes
         self.last_user_input_time = time.time()
         self.suggestions_given = []
         self.activity_history = []

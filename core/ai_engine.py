@@ -172,14 +172,14 @@ class OfflineAI:
         import time
         
         self._screen_suggestion_count = 0
-        self._max_screen_suggestions = 3  # Max proactive suggestions per session
+        self._max_screen_suggestions = 2  # Max proactive suggestions per session
         
         def screen_callback(suggestion, activity):
-            # Don't speak during first 60 seconds
+            # Don't speak during first 120 seconds
             if not hasattr(self, '_startup_time'):
                 self._startup_time = time.time()
             
-            if time.time() - self._startup_time < 60:
+            if time.time() - self._startup_time < 120:
                 logger.info(f"Proactive screen suggestion (deferred): {suggestion}")
                 return
             
@@ -350,6 +350,19 @@ class OfflineAI:
     
     def _speak_text(self, text, fast=False, emotion=None):
         """Speak text with emotion detection and voice variations"""
+        import time
+        
+        # Debounce: don't speak if spoke too recently
+        current_time = time.time()
+        if not hasattr(self, '_last_speak_time'):
+            self._last_speak_time = 0
+        
+        if current_time - self._last_speak_time < 2.5:
+            logger.info(f"Speech debounced: {text[:50]}...")
+            return
+        
+        self._last_speak_time = current_time
+        
         if hasattr(self, 'tts_engine') and self.tts_engine:
             if self.tts_engine.is_available():
                 try:

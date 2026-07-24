@@ -752,6 +752,90 @@
       ],
       "sentiment": "neutral",
       "response_quality": null
+    },
+    {
+      "user_input": "now listening for your voice command",
+      "ai_response": "Oh, I see! What else?",
+      "timestamp": "2026-07-24T18:51:24.053385",
+      "context": {
+        "current_topic": null,
+        "recent_topics": [
+          "general",
+          "general"
+        ],
+        "conversation_flow": [],
+        "pending_question": "How could this be improved?",
+        "awaiting_answer": true,
+        "last_interaction_quality": null
+      },
+      "topics": [
+        "general"
+      ],
+      "sentiment": "neutral",
+      "response_quality": null
+    },
+    {
+      "user_input": "Q: What are the practical implications?",
+      "ai_response": "A: hello",
+      "timestamp": "2026-07-24T18:51:36.235730",
+      "context": {
+        "current_topic": null,
+        "recent_topics": [
+          "general",
+          "general"
+        ],
+        "conversation_flow": [],
+        "pending_question": "How could this be improved?",
+        "awaiting_answer": true,
+        "last_interaction_quality": null
+      },
+      "topics": [
+        "general"
+      ],
+      "sentiment": "neutral",
+      "response_quality": null
+    },
+    {
+      "user_input": "that's really interesting",
+      "ai_response": "Interesting! Tell me more!",
+      "timestamp": "2026-07-24T18:51:48.984726",
+      "context": {
+        "current_topic": null,
+        "recent_topics": [
+          "general",
+          "general"
+        ],
+        "conversation_flow": [],
+        "pending_question": "How could this be improved?",
+        "awaiting_answer": true,
+        "last_interaction_quality": null
+      },
+      "topics": [
+        "general"
+      ],
+      "sentiment": "neutral",
+      "response_quality": null
+    },
+    {
+      "user_input": "Q: How could this be improved?",
+      "ai_response": "A: tell me more",
+      "timestamp": "2026-07-24T18:52:01.528662",
+      "context": {
+        "current_topic": null,
+        "recent_topics": [
+          "general",
+          "general"
+        ],
+        "conversation_flow": [],
+        "pending_question": "How could this be improved?",
+        "awaiting_answer": true,
+        "last_interaction_quality": null
+      },
+      "topics": [
+        "general"
+      ],
+      "sentiment": "neutral",
+      "response_quality": null
     }
   ],
   "patterns": {
@@ -790,9 +874,10 @@
     "this": {
       "responses": [
         "A: how much do you know about internet",
-        "A: play something in youtube"
+        "A: play something in youtube",
+        "A: tell me more"
       ],
-      "count": 2
+      "count": 3
     },
     "solve?": {
       "responses": [
@@ -803,18 +888,20 @@
     "could": {
       "responses": [
         "A: how much do you know about internet",
-        "A: open youtube"
+        "A: open youtube",
+        "A: tell me more"
       ],
-      "count": 2
+      "count": 3
     },
     "what": {
       "responses": [
         "A: how much do you know about internet",
         "A: toraniya education",
         "A: other countries",
-        "A: play the song"
+        "A: play the song",
+        "A: hello"
       ],
-      "count": 4
+      "count": 5
     },
     "having": {
       "responses": [
@@ -1079,15 +1166,17 @@
     },
     "practical": {
       "responses": [
-        "A: play the song"
+        "A: play the song",
+        "A: hello"
       ],
-      "count": 1
+      "count": 2
     },
     "implications?": {
       "responses": [
-        "A: play the song"
+        "A: play the song",
+        "A: hello"
       ],
-      "count": 1
+      "count": 2
     },
     "select": {
       "responses": [
@@ -1134,9 +1223,10 @@
     },
     "your": {
       "responses": [
-        "Tell me more! I'm enjoying this!"
+        "Tell me more! I'm enjoying this!",
+        "Oh, I see! What else?"
       ],
-      "count": 1
+      "count": 2
     },
     "recognise": {
       "responses": [
@@ -1152,13 +1242,50 @@
     },
     "voice": {
       "responses": [
-        "Tell me more! I'm enjoying this!"
+        "Tell me more! I'm enjoying this!",
+        "Oh, I see! What else?"
       ],
-      "count": 1
+      "count": 2
     },
     "sorry": {
       "responses": [
         "Tell me more! I'm enjoying this!"
+      ],
+      "count": 1
+    },
+    "command": {
+      "responses": [
+        "Oh, I see! What else?"
+      ],
+      "count": 1
+    },
+    "listening": {
+      "responses": [
+        "Oh, I see! What else?"
+      ],
+      "count": 1
+    },
+    "that's": {
+      "responses": [
+        "Interesting! Tell me more!"
+      ],
+      "count": 1
+    },
+    "interesting": {
+      "responses": [
+        "Interesting! Tell me more!"
+      ],
+      "count": 1
+    },
+    "really": {
+      "responses": [
+        "Interesting! Tell me more!"
+      ],
+      "count": 1
+    },
+    "improved?": {
+      "responses": [
+        "A: tell me more"
       ],
       "count": 1
     }
@@ -1305,6 +1432,26 @@
           "input": "sorry i don't recognise your voice",
           "response": "Tell me more! I'm enjoying this!",
           "timestamp": "2026-07-24T17:40:42.520601"
+        },
+        {
+          "input": "now listening for your voice command",
+          "response": "Oh, I see! What else?",
+          "timestamp": "2026-07-24T18:51:24.053430"
+        },
+        {
+          "input": "Q: What are the practical implications?",
+          "response": "A: hello",
+          "timestamp": "2026-07-24T18:51:36.235801"
+        },
+        {
+          "input": "that's really interesting",
+          "response": "Interesting! Tell me more!",
+          "timestamp": "2026-07-24T18:51:48.984767"
+        },
+        {
+          "input": "Q: How could this be improved?",
+          "response": "A: tell me more",
+          "timestamp": "2026-07-24T18:52:01.528723"
         }
       ],
       "learned_facts": [],
@@ -1344,5 +1491,5 @@
     }
   },
   "conversation_flows": [],
-  "last_updated": "2026-07-24T17:46:50.156782"
+  "last_updated": "2026-07-24T18:52:01.528764"
 }

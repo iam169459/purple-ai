@@ -11,11 +11,28 @@ from config import config
 from logger import logger
 
 class TTSEngine:
+    _instance = None
+    _lock = threading.Lock()
+    
+    def __new__(cls):
+        with cls._lock:
+            if cls._instance is None:
+                cls._instance = super(TTSEngine, cls).__new__(cls)
+                cls._instance._initialized = False
+            return cls._instance
+    
     def __init__(self):
+        if self._initialized:
+            return
+        self._initialized = True
+        
         self._cached_voice_id_en = None
         self._cached_voice_id_bn = None
         self._breathing_enabled = True
         self._speaking = False
+        self._speech_lock = threading.Lock()
+        self._last_speech_time = 0
+        self._min_speech_interval = 2.0  # Minimum 2 seconds between speeches
         self._emotion_profiles = self._setup_emotion_profiles()
         self._initialize_tts()
     
@@ -196,19 +213,43 @@ class TTSEngine:
         thread.start()
     
     def speak(self, text, async_mode=True):
-        while self._speaking:
-            time.sleep(0.05)
-        self._speak_in_thread(text, with_breathing=True, emotion='neutral')
+        """Speak with lock to prevent multiple simultaneous speeches"""
+        with self._speech_lock:
+            # Wait if speaking too recently
+            current_time = time.time()
+            time_since_last = current_time - self._last_speech_time
+            if time_since_last < self._min_speech_interval:
+                time.sleep(self._min_speech_interval - time_since_last)
+            
+            # Wait for current speech to finish
+            while self._speaking:
+                time.sleep(0.05)
+            
+            self._last_speech_time = time.time()
+            self._speak_in_thread(text, with_breathing=True, emotion='neutral')
     
     def speak_fast(self, text):
-        while self._speaking:
-            time.sleep(0.05)
-        self._speak_in_thread(text, with_breathing=False, emotion='neutral')
+        """Speak fast without breathing"""
+        with self._speech_lock:
+            while self._speaking:
+                time.sleep(0.05)
+            self._last_speech_time = time.time()
+            self._speak_in_thread(text, with_breathing=False, emotion='neutral')
     
     def speak_with_emotion(self, text, emotion='neutral'):
-        while self._speaking:
-            time.sleep(0.05)
-        self._speak_in_thread(text, with_breathing=True, emotion=emotion)
+        """Speak with emotion"""
+        with self._speech_lock:
+            # Wait if speaking too recently
+            current_time = time.time()
+            time_since_last = current_time - self._last_speech_time
+            if time_since_last < self._min_speech_interval:
+                time.sleep(self._min_speech_interval - time_since_last)
+            
+            while self._speaking:
+                time.sleep(0.05)
+            
+            self._last_speech_time = time.time()
+            self._speak_in_thread(text, with_breathing=True, emotion=emotion)
     
     def stop(self):
         self._speaking = False
