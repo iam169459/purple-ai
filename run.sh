@@ -21,23 +21,37 @@ REQ_FILE="$PROJECT_DIR/requirements.txt"
 LOCK_FILE="/tmp/purple_ai.lock"
 PID_FILE="/tmp/purple_ai.pid"
 
+# Kill any existing purple ai processes
+kill_existing() {
+    # Kill by PID file
+    if [ -f "$PID_FILE" ]; then
+        OLD_PID=$(cat "$PID_FILE")
+        if kill -0 "$OLD_PID" 2>/dev/null; then
+            echo -e "${YELLOW}Stopping existing Purple AI (PID: $OLD_PID)...${NC}"
+            kill "$OLD_PID" 2>/dev/null || true
+            sleep 1
+        fi
+        rm -f "$PID_FILE"
+    fi
+    
+    # Also kill any python processes running main.py
+    pkill -f "python.*main.py" 2>/dev/null || true
+    rm -f "$LOCK_FILE"
+}
+
 # Check if already running
 check_single_instance() {
-    if [ -f "$LOCK_FILE" ]; then
-        if [ -f "$PID_FILE" ]; then
-            OLD_PID=$(cat "$PID_FILE")
-            if kill -0 "$OLD_PID" 2>/dev/null; then
-                echo -e "${YELLOW}Purple AI is already running (PID: $OLD_PID)${NC}"
-                echo -e "${BLUE}Use './run.sh stop' to stop it first${NC}"
-                exit 1
-            else
-                echo -e "${YELLOW}Removing stale lock file...${NC}"
-                rm -f "$LOCK_FILE" "$PID_FILE"
-            fi
+    if [ -f "$PID_FILE" ]; then
+        OLD_PID=$(cat "$PID_FILE")
+        if kill -0 "$OLD_PID" 2>/dev/null; then
+            echo -e "${YELLOW}Purple AI is already running (PID: $OLD_PID)${NC}"
+            echo -e "${BLUE}Use './run.sh stop' to stop it first${NC}"
+            exit 1
         else
-            rm -f "$LOCK_FILE"
+            rm -f "$LOCK_FILE" "$PID_FILE"
         fi
     fi
+    rm -f "$LOCK_FILE"
 }
 
 # Create lock file
@@ -53,21 +67,8 @@ remove_lock() {
 
 # Stop running instance
 stop_instance() {
-    if [ -f "$PID_FILE" ]; then
-        OLD_PID=$(cat "$PID_FILE")
-        if kill -0 "$OLD_PID" 2>/dev/null; then
-            echo -e "${YELLOW}Stopping Purple AI (PID: $OLD_PID)...${NC}"
-            kill "$OLD_PID" 2>/dev/null || true
-            sleep 1
-            echo -e "${GREEN}Stopped!${NC}"
-        else
-            echo -e "${YELLOW}No running instance found${NC}"
-        fi
-        remove_lock
-    else
-        echo -e "${YELLOW}No running instance found${NC}"
-        rm -f "$LOCK_FILE"
-    fi
+    kill_existing
+    echo -e "${GREEN}Purple AI stopped!${NC}"
 }
 
 # Check Python
@@ -104,7 +105,7 @@ activate_venv() {
 # Clean function
 clean() {
     echo -e "${YELLOW}Cleaning...${NC}"
-    remove_lock
+    kill_existing
     rm -f "$PROJECT_DIR"/*.pyc
     rm -rf "$PROJECT_DIR"/__pycache__
     rm -rf "$PROJECT_DIR"/utils/__pycache__
@@ -167,6 +168,9 @@ main() {
             exit 0
             ;;
     esac
+    
+    # Kill any existing instances first
+    kill_existing
     
     # Check single instance
     check_single_instance
