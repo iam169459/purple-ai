@@ -14,9 +14,7 @@ Pillow
 # Offline speech recognition
 vosk==0.3.44
 
-# Code analysis
-ast
-subprocess
+# Code analysis (uses stdlib ast and subprocess modules)
 
 # Optional but recommended
 gTTS==2.5.1

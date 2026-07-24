@@ -1,5 +1,6 @@
 """
 Advanced AI System - Deep Learning, Memory, and Autonomous Behavior
+Now with Hypothesis Engine, Metacognition, and Knowledge Graph integration
 """
 import json
 import time
@@ -8,6 +9,11 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from collections import deque
 import hashlib
+
+from utils.knowledge_graph import KnowledgeGraph
+from utils.metacognition import metacognition
+from utils.hypothesis_engine import HypothesisEngine
+
 
 class AdvancedAI:
     """Advanced AI with deep learning and autonomous behavior"""
@@ -63,6 +69,15 @@ class AdvancedAI:
             "created_at": datetime.now().isoformat()
         })
         
+        # NEW: Integrated brain systems
+        self.knowledge_graph = KnowledgeGraph(
+            str(self.base_dir / "data" / "knowledge_graph.json")
+        )
+        self.hypothesis_engine = HypothesisEngine(
+            knowledge_graph=self.knowledge_graph,
+            data_dir=str(self.base_dir / "thinking_data")
+        )
+        
         self.logger = self._setup_logger()
     
     def _setup_logger(self):
@@ -102,6 +117,7 @@ class AdvancedAI:
         self._save_json("personality_evolved.json", self.personality_traits)
         self._save_json("autonomous_goals.json", self.autonomous_goals)
         self._save_json("ai_stats.json", self.stats)
+        # Knowledge graph saves itself
     
     # ==================== EPISODIC MEMORY ====================
     
@@ -455,7 +471,11 @@ class AdvancedAI:
         self._save_all()
     
     def get_ai_stats(self) -> dict:
-        """Get comprehensive AI statistics"""
+        """Get comprehensive AI statistics including brain systems"""
+        kg_stats = self.knowledge_graph.get_stats()
+        hyp_report = self.hypothesis_engine.get_hypothesis_report()
+        metacog_report = metacognition.get_metacognition_report()
+        
         return {
             "stats": self.stats,
             "personality": self.personality_traits,
@@ -465,7 +485,94 @@ class AdvancedAI:
             "memories": len(self.episodic_memory["episodes"]),
             "facts_learned": sum(len(facts) for facts in self.semantic_memory["facts"].values()),
             "skills_learned": len(self.procedural_memory["skills"]),
-            "patterns_learned": sum(len(p) for p in self.patterns.values())
+            "patterns_learned": sum(len(p) for p in self.patterns.values()),
+            "knowledge_graph": kg_stats,
+            "hypotheses": hyp_report,
+            "metacognition": metacog_report
+        }
+    
+    # ==================== CAUSAL LEARNING ====================
+    
+    def extract_causal_from_text(self, text: str) -> list:
+        """
+        Extract causal relationships from natural language text.
+        E.g., "smoking causes cancer" → add_causal_link("smoking", "cancer")
+        """
+        text_lower = text.lower()
+        causal_links = []
+        
+        # Pattern: "X causes Y"
+        import re
+        causes_pattern = r'(\w[\w\s]*?)\s+causes?\s+(\w[\w\s]*?)(?:\.|,|$)'
+        for match in re.finditer(causes_pattern, text_lower):
+            cause = match.group(1).strip()
+            effect = match.group(2).strip()
+            if cause and effect:
+                self.knowledge_graph.add_causal_link(cause, effect, confidence=0.7)
+                causal_links.append({"cause": cause, "effect": effect})
+        
+        # Pattern: "X leads to Y"
+        leads_pattern = r'(\w[\w\s]*?)\s+leads?\s+to\s+(\w[\w\s]*?)(?:\.|,|$)'
+        for match in re.finditer(leads_pattern, text_lower):
+            cause = match.group(1).strip()
+            effect = match.group(2).strip()
+            if cause and effect:
+                self.knowledge_graph.add_edge(cause, effect, "LEADS_TO", confidence=0.7)
+                causal_links.append({"cause": cause, "effect": effect, "type": "leads_to"})
+        
+        # Pattern: "X prevents Y"
+        prevents_pattern = r'(\w[\w\s]*?)\s+prevents?\s+(\w[\w\s]*?)(?:\.|,|$)'
+        for match in re.finditer(prevents_pattern, text_lower):
+            preventer = match.group(1).strip()
+            effect = match.group(2).strip()
+            if preventer and effect:
+                self.knowledge_graph.add_prevention(preventer, effect, confidence=0.7)
+                causal_links.append({"prevents": preventer, "effect": effect})
+        
+        # Pattern: "X requires Y"
+        requires_pattern = r'(\w[\w\s]*?)\s+requires?\s+(\w[\w\s]*?)(?:\.|,|$)'
+        for match in re.finditer(requires_pattern, text_lower):
+            prerequisite = match.group(1).strip()
+            required = match.group(2).strip()
+            if prerequisite and required:
+                self.knowledge_graph.add_requirement(prerequisite, required, confidence=0.7)
+                causal_links.append({"requires": prerequisite, "required": required})
+        
+        return causal_links
+    
+    def reason_about_question(self, question: str, context: dict = None) -> dict:
+        """
+        Advanced reasoning using hypothesis engine and knowledge graph.
+        """
+        # Generate hypotheses
+        hypotheses = self.hypothesis_engine.generate_hypotheses(question, context)
+        
+        # Look up relevant knowledge
+        kg_results = self.knowledge_graph.search(question, limit=5)
+        
+        # Try causal reasoning
+        causal_chains = []
+        for node in kg_results:
+            effects = self.knowledge_graph.query_effects(node.concept)
+            causes = self.knowledge_graph.query_causes(node.concept)
+            if effects or causes:
+                causal_chains.append({
+                    "concept": node.concept,
+                    "causes": causes,
+                    "effects": effects
+                })
+        
+        # Get best hypothesis
+        best = self.hypothesis_engine.get_most_likely()
+        
+        return {
+            "hypotheses": [h.to_dict() for h in hypotheses],
+            "best_hypothesis": best.to_dict() if best else None,
+            "knowledge_results": [
+                {"concept": n.concept, "data": n.data, "confidence": n.confidence}
+                for n in kg_results
+            ],
+            "causal_chains": causal_chains
         }
 
 

@@ -1,7 +1,13 @@
 import os
-import torch
-import torchaudio
 from logger import logger
+
+try:
+    import torch
+    import torchaudio
+except ImportError:
+    torch = None
+    torchaudio = None
+    logger.warning("torch/torchaudio not available - speaker verification disabled")
 
 # Try importing from new speechbrain (>= 1.0) and fallback to older versions
 try:
@@ -22,7 +28,7 @@ class SpeakerVerification:
 
     def initialize(self):
         """Lazy load the model to speed up fast boots if not needed"""
-        if self.model is None and SpeakerRecognition is not None:
+        if self.model is None and SpeakerRecognition is not None and torch is not None:
             logger.info("Loading Speaker Recognition model (this may take a moment)...")
             try:
                 self.model = SpeakerRecognition.from_hparams(

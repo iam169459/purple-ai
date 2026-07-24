@@ -1,0 +1,32 @@
+{
+  "analytical": {
+    "attempts": 0,
+    "successes": 0,
+    "avg_quality": 0.7
+  },
+  "intuitive": {
+    "attempts": 0,
+    "successes": 0,
+    "avg_quality": 0.6
+  },
+  "creative": {
+    "attempts": 0,
+    "successes": 0,
+    "avg_quality": 0.5
+  },
+  "empathetic": {
+    "attempts": 0,
+    "successes": 0,
+    "avg_quality": 0.65
+  },
+  "research_heavy": {
+    "attempts": 0,
+    "successes": 0,
+    "avg_quality": 0.75
+  },
+  "step_by_step": {
+    "attempts": 1,
+    "successes": 0,
+    "avg_quality": 0.5
+  }
+}

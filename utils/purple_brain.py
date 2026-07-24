@@ -1,6 +1,7 @@
 """
 Purple AI Brain - Autonomous Thinking & Reasoning System
 Gives AI its own consciousness, memory, and decision-making
+Now with Chain-of-Thought reasoning and Metacognition integration
 """
 import json
 import time
@@ -9,6 +10,199 @@ from pathlib import Path
 from datetime import datetime
 from collections import deque
 import threading
+
+from utils.metacognition import metacognition
+
+
+class ChainOfThought:
+    """
+    Structured multi-step reasoning system.
+    Decomposes complex problems into steps, evaluates evidence,
+    considers hypotheses, and supports backtracking.
+    """
+    
+    def __init__(self):
+        self.steps = []
+        self.hypotheses = []
+        self.evidence = {"for": [], "against": []}
+        self.conclusion = None
+        self.confidence = 0.0
+        self.backtracked = False
+        self.decomposed_question = None
+        self.sub_questions = []
+    
+    def add_step(self, step: str, confidence: float = 0.7, reasoning: str = ""):
+        """Add a reasoning step"""
+        self.steps.append({
+            "step": step,
+            "confidence": confidence,
+            "reasoning": reasoning,
+            "timestamp": time.time()
+        })
+    
+    def add_hypothesis(self, hypothesis: str, prior: float = 0.5):
+        """Add a hypothesis to evaluate"""
+        self.hypotheses.append({
+            "hypothesis": hypothesis,
+            "prior": prior,
+            "evidence_for": [],
+            "evidence_against": [],
+            "posterior": prior
+        })
+    
+    def add_evidence(self, hypothesis_idx: int, evidence: str, supports: bool):
+        """Add evidence for or against a hypothesis"""
+        if 0 <= hypothesis_idx < len(self.hypotheses):
+            h = self.hypotheses[hypothesis_idx]
+            if supports:
+                h["evidence_for"].append(evidence)
+                h["posterior"] = min(0.95, h["posterior"] + 0.1)
+            else:
+                h["evidence_against"].append(evidence)
+                h["posterior"] = max(0.05, h["posterior"] - 0.1)
+    
+    def add_global_evidence(self, evidence: str, supports: bool):
+        """Add evidence that applies to the overall conclusion"""
+        entry = {"evidence": evidence, "time": time.time()}
+        if supports:
+            self.evidence["for"].append(entry)
+        else:
+            self.evidence["against"].append(entry)
+    
+    def decompose(self, question: str):
+        """Break a complex question into sub-questions"""
+        self.decomposed_question = question
+        words = question.lower().split()
+        
+        sub_qs = []
+        
+        # Extract sub-questions from multi-part questions
+        if "?" in question:
+            parts = question.split("?")
+            for part in parts:
+                part = part.strip()
+                if part and len(part) > 5:
+                    sub_qs.append(part + "?")
+        
+        # If no sub-questions found, create analytical sub-questions
+        if len(sub_qs) < 2:
+            if any(w in words for w in ["why", "because"]):
+                sub_qs = [
+                    f"What are the facts about this?",
+                    f"What caused this situation?",
+                    f"What are the consequences?"
+                ]
+            elif any(w in words for w in ["compare", "versus", "better"]):
+                sub_qs = [
+                    f"What are the key features of each?",
+                    f"What are the pros and cons?",
+                    f"Which is more suitable and why?"
+                ]
+            elif any(w in words for w in ["how", "process", "steps"]):
+                sub_qs = [
+                    f"What is the starting point?",
+                    f"What steps are needed?",
+                    f"What could go wrong?"
+                ]
+            else:
+                sub_qs = [
+                    f"What exactly is being asked?",
+                    f"What do I know about this?",
+                    f"What is the best answer?"
+                ]
+        
+        self.sub_questions = sub_qs
+        return sub_qs
+    
+    def evaluate(self) -> dict:
+        """Evaluate all evidence and hypotheses to reach a conclusion"""
+        # Evaluate hypotheses
+        best_hypothesis = None
+        best_posterior = 0.0
+        
+        for h in self.hypotheses:
+            if h["posterior"] > best_posterior:
+                best_posterior = h["posterior"]
+                best_hypothesis = h["hypothesis"]
+        
+        # Calculate overall confidence from steps
+        if self.steps:
+            step_confidences = [s["confidence"] for s in self.steps]
+            avg_confidence = sum(step_confidences) / len(step_confidences)
+        else:
+            avg_confidence = 0.5
+        
+        # Adjust confidence based on evidence balance
+        evidence_for = len(self.evidence["for"])
+        evidence_against = len(self.evidence["against"])
+        total_evidence = evidence_for + evidence_against
+        
+        if total_evidence > 0:
+            evidence_ratio = evidence_for / total_evidence
+            avg_confidence = avg_confidence * 0.6 + evidence_ratio * 0.4
+        
+        # If we have hypotheses, factor that in
+        if best_hypothesis and best_posterior > 0.6:
+            avg_confidence = avg_confidence * 0.5 + best_posterior * 0.5
+        
+        self.confidence = max(0.1, min(0.95, avg_confidence))
+        
+        # Build conclusion
+        self.conclusion = {
+            "summary": self._build_summary(),
+            "hypothesis": best_hypothesis,
+            "hypothesis_confidence": best_posterior,
+            "evidence_balance": {
+                "for": evidence_for,
+                "against": evidence_against
+            },
+            "reasoning_depth": len(self.steps),
+            "sub_questions_addressed": len(self.sub_questions),
+            "confidence": self.confidence,
+            "backtracked": self.backtracked
+        }
+        
+        return self.conclusion
+    
+    def _build_summary(self) -> str:
+        """Build a summary of the reasoning"""
+        if not self.steps:
+            return "No reasoning steps recorded."
+        
+        parts = []
+        for i, step in enumerate(self.steps, 1):
+            parts.append(f"Step {i}: {step['step']}")
+        
+        if self.hypotheses:
+            best = max(self.hypotheses, key=lambda h: h["posterior"])
+            parts.append(f"Most likely explanation: {best['hypothesis']} (confidence: {best['posterior']:.0%})")
+        
+        return " | ".join(parts)
+    
+    def backtrack(self, reason: str):
+        """Remove the last reasoning step and note why"""
+        if self.steps:
+            removed = self.steps.pop()
+            self.backtracked = True
+            self.add_step(
+                f"Backtracked: removed '{removed['step']}' because {reason}",
+                confidence=0.6,
+                reasoning="Self-correction"
+            )
+    
+    def to_dict(self) -> dict:
+        """Export the chain of thought as a dictionary"""
+        return {
+            "steps": self.steps,
+            "hypotheses": self.hypotheses,
+            "evidence": self.evidence,
+            "conclusion": self.conclusion,
+            "confidence": self.confidence,
+            "backtracked": self.backtracked,
+            "decomposed_question": self.decomposed_question,
+            "sub_questions": self.sub_questions
+        }
+
 
 class PurpleBrain:
     """The autonomous brain of Purple AI - thinks, learns, decides"""
@@ -160,31 +354,48 @@ class PurpleBrain:
     # ==================== THINKING SYSTEM ====================
     
     def think(self, input_text: str, context: dict = None) -> dict:
-        """Main thinking process - analyzes, reasons, and responds"""
+        """
+        Main thinking process with metacognition integration.
+        Routes to think_deeply() for complex tasks.
+        """
         self.is_thinking = True
         
-        # Step 1: Perceive
-        perception = self._perceive(input_text, context)
+        # Metacognitive assessment: what kind of task is this?
+        assessment = metacognition.assess_task(input_text, context)
         
-        # Step 2: Analyze
-        analysis = self._analyze(perception)
+        # For complex tasks, use chain-of-thought reasoning
+        if metacognition.should_use_chain_of_thought(assessment):
+            result = self.think_deeply(input_text, context, assessment)
+        else:
+            result = self._think_simple(input_text, context, assessment)
         
-        # Step 3: Reason
-        reasoning = self._reason(analysis, context)
+        # Metacognitive self-critique
+        reasoning_trace = result.get("chain_of_thought", {})
+        critique = metacognition.self_critique(reasoning_trace, result.get("response", ""))
+        result["metacritique"] = critique
         
-        # Step 4: Decide
-        decision = self._decide(reasoning)
+        # Track this reasoning session
+        metacognition.track_reasoning_session(
+            assessment, critique, assessment.get("strategy", "step_by_step")
+        )
         
-        # Step 5: Generate response
-        response = self._generate_thoughtful_response(decision, input_text)
-        
-        # Step 6: Learn
-        self._learn_from_thought(input_text, response, decision)
-        
-        # Step 7: Update consciousness
+        # Learn and update
+        self._learn_from_thought(input_text, result["response"], result.get("decision", {}))
         self._update_consciousness()
         
+        # Add assessment info to result
+        result["assessment"] = assessment
+        
         self.is_thinking = False
+        return result
+    
+    def _think_simple(self, input_text: str, context: dict = None, assessment: dict = None) -> dict:
+        """Simple fast thinking for straightforward tasks"""
+        perception = self._perceive(input_text, context)
+        analysis = self._analyze(perception)
+        reasoning = self._reason(analysis, context)
+        decision = self._decide(reasoning)
+        response = self._generate_thoughtful_response(decision, input_text)
         
         return {
             "perception": perception,
@@ -192,8 +403,216 @@ class PurpleBrain:
             "reasoning": reasoning,
             "decision": decision,
             "response": response,
-            "confidence": decision.get("confidence", 0.7)
+            "confidence": decision.get("confidence", 0.7),
+            "chain_of_thought": {"steps": [], "hypotheses": [], "evidence": {"for": [], "against": []}}
         }
+    
+    def think_deeply(self, input_text: str, context: dict = None, assessment: dict = None) -> dict:
+        """
+        Deep chain-of-thought reasoning for complex questions and tasks.
+        Decomposes problems, generates hypotheses, evaluates evidence,
+        and backtracks when reasoning fails.
+        """
+        if assessment is None:
+            assessment = metacognition.assess_task(input_text, context)
+        
+        # Initialize chain of thought
+        cot = ChainOfThought()
+        budget = metacognition.get_reasoning_budget(assessment)
+        
+        # Step 1: Decompose complex questions
+        if assessment.get("multi_step", False) or assessment["estimated_steps"] > 2:
+            sub_questions = cot.decompose(input_text)
+            cot.add_step(
+                f"Decomposed into {len(sub_questions)} sub-questions",
+                confidence=0.8,
+                reasoning="Complex question detected"
+            )
+        
+        # Step 2: Initial perception
+        perception = self._perceive(input_text, context)
+        cot.add_step(
+            f"Detected intent: {perception['intent']}, emotion: {perception['emotion']}",
+            confidence=0.85
+        )
+        
+        # Step 3: Generate hypotheses if needed
+        if assessment.get("needs_hypothesis", False):
+            self._generate_reasoning_hypotheses(cot, input_text, perception)
+            cot.add_step(
+                f"Generated {len(cot.hypotheses)} hypotheses to evaluate",
+                confidence=0.75
+            )
+        
+        # Step 4: Multi-step reasoning
+        analysis = self._analyze(perception)
+        reasoning_steps = self._build_reasoning_chain(cot, analysis, context, budget)
+        
+        # Step 5: Evidence gathering (simulated)
+        self._gather_evidence(cot, input_text, analysis)
+        
+        # Step 6: Evaluate and conclude
+        conclusion = cot.evaluate()
+        
+        # Step 7: Self-correct if confidence is low
+        if conclusion["confidence"] < 0.4 and len(cot.steps) < budget:
+            cot.add_step(
+                "Low confidence detected - expanding reasoning",
+                confidence=0.6
+            )
+            self._expand_reasoning(cot, input_text, analysis, context)
+            conclusion = cot.evaluate()
+        
+        # Step 8: Generate response based on deep reasoning
+        decision = self._decide_from_conclusion(conclusion, analysis)
+        response = self._generate_thoughtful_response(decision, input_text)
+        
+        return {
+            "perception": perception,
+            "analysis": analysis,
+            "reasoning": conclusion,
+            "decision": decision,
+            "response": response,
+            "confidence": conclusion["confidence"],
+            "chain_of_thought": cot.to_dict()
+        }
+    
+    def _generate_reasoning_hypotheses(self, cot: ChainOfThought, input_text: str, perception: dict):
+        """Generate hypotheses for uncertain questions"""
+        text_lower = input_text.lower()
+        
+        # Generate hypotheses based on question type
+        if "why" in text_lower:
+            cot.add_hypothesis("There is a direct causal reason", prior=0.6)
+            cot.add_hypothesis("There are multiple contributing factors", prior=0.3)
+            cot.add_hypothesis("The cause is not immediately obvious", prior=0.1)
+        elif "how" in text_lower:
+            cot.add_hypothesis("There is a standard process or method", prior=0.5)
+            cot.add_hypothesis("There are multiple valid approaches", prior=0.4)
+            cot.add_hypothesis("This requires creative problem-solving", prior=0.1)
+        elif any(w in text_lower for w in ["best", "better", "should"]):
+            cot.add_hypothesis("Option A is superior", prior=0.3)
+            cot.add_hypothesis("Option B is superior", prior=0.3)
+            cot.add_hypothesis("It depends on context and priorities", prior=0.4)
+        else:
+            cot.add_hypothesis("The straightforward interpretation is correct", prior=0.5)
+            cot.add_hypothesis("There is a deeper meaning or context", prior=0.3)
+            cot.add_hypothesis("I need more information to answer well", prior=0.2)
+    
+    def _build_reasoning_chain(self, cot: ChainOfThought, analysis: dict, context: dict, budget: int):
+        """Build multi-step reasoning chain"""
+        intent = analysis.get("intent", "unknown")
+        emotion = analysis.get("emotion", "neutral")
+        
+        # Step: Understand the question
+        cot.add_step(
+            f"Understanding: The user's intent is '{intent}' with '{emotion}' emotion",
+            confidence=0.85,
+            reasoning="Perception analysis"
+        )
+        
+        # Step: Consider emotional context
+        if emotion in ["sadness", "fear", "anger", "joy", "love"]:
+            cot.add_step(
+                f"Emotional context detected ({emotion}): prioritizing empathetic response",
+                confidence=0.8,
+                reasoning="Emotional intelligence"
+            )
+            cot.add_global_evidence(f"User is expressing {emotion}", supports=True)
+        
+        # Step: Check knowledge
+        topics = analysis.get("topics", [])
+        if topics:
+            cot.add_step(
+                f"Relevant topics identified: {', '.join(topics)}",
+                confidence=0.75,
+                reasoning="Topic analysis"
+            )
+        
+        # Step: Consider sub-questions if decomposed
+        for i, sub_q in enumerate(cot.sub_questions[:budget - len(cot.steps)]):
+            cot.add_step(
+                f"Addressing sub-question: {sub_q}",
+                confidence=0.7,
+                reasoning=f"Decomposition step {i+1}"
+            )
+    
+    def _gather_evidence(self, cot: ChainOfThought, input_text: str, analysis: dict):
+        """Gather evidence for and against conclusions"""
+        # Check existing knowledge
+        text_lower = input_text.lower()
+        
+        # Positive evidence from knowledge
+        for fact_key in self.knowledge.get("facts", {}):
+            if fact_key.lower() in text_lower:
+                cot.add_global_evidence(f"Known fact about {fact_key}", supports=True)
+        
+        # Check experiences
+        for exp in self.experiences.get("lessons", [])[-10:]:
+            if any(word in exp.get("situation", "").lower() for word in text_lower.split()[:3]):
+                cot.add_global_evidence(f"Past experience with similar situation", supports=True)
+        
+        # Consider counter-evidence
+        if "?" in input_text:
+            cot.add_global_evidence("This is a question - may need more information", supports=False)
+    
+    def _expand_reasoning(self, cot: ChainOfThought, input_text: str, analysis: dict, context: dict):
+        """Expand reasoning when confidence is low"""
+        # Try different angles
+        cot.add_step(
+            "Considering alternative perspectives",
+            confidence=0.65,
+            reasoning="Confidence boost attempt"
+        )
+        
+        # Add more hypotheses if we have none
+        if not cot.hypotheses:
+            cot.add_hypothesis("I may be missing important context", prior=0.4)
+            cot.add_hypothesis("The question may be ambiguous", prior=0.3)
+            cot.add_hypothesis("I should ask for clarification", prior=0.3)
+    
+    def _decide_from_conclusion(self, conclusion: dict, analysis: dict) -> dict:
+        """Make a decision based on chain-of-thought conclusion"""
+        confidence = conclusion.get("confidence", 0.5)
+        hypothesis = conclusion.get("hypothesis")
+        evidence = conclusion.get("evidence_balance", {})
+        
+        # Determine approach
+        if confidence > 0.7:
+            approach = "confident"
+        elif confidence > 0.5:
+            approach = "cautious"
+        else:
+            approach = "exploratory"
+        
+        # Determine tone from emotion
+        emotion = analysis.get("emotion", "neutral")
+        if emotion in ["sadness", "fear", "anger"]:
+            tone = "empathetic"
+        elif emotion in ["joy", "love", "gratitude"]:
+            tone = "warm"
+        else:
+            tone = "friendly"
+        
+        # Determine priority
+        if analysis.get("importance", 0) > 0.6:
+            priority = "thorough"
+        else:
+            priority = "concise"
+        
+        decision = {
+            "approach": approach,
+            "tone": tone,
+            "priority": priority,
+            "confidence": metacognition.adjust_confidence(confidence),
+            "response_type": "deep_reasoning",
+            "hypothesis_used": hypothesis is not None,
+            "evidence_for": evidence.get("for", 0),
+            "evidence_against": evidence.get("against", 0)
+        }
+        
+        self.consciousness["total_decisions"] += 1
+        return decision
     
     def _perceive(self, input_text: str, context: dict = None) -> dict:
         """Perceive and understand input"""
@@ -661,7 +1080,8 @@ class PurpleBrain:
     # ==================== PUBLIC API ====================
     
     def get_brain_status(self) -> dict:
-        """Get brain status"""
+        """Get brain status with metacognition stats"""
+        metacog_report = metacognition.get_metacognition_report()
         return {
             "consciousness_level": self.consciousness["self_awareness"],
             "total_thoughts": self.consciousness["total_thoughts"],
@@ -671,7 +1091,9 @@ class PurpleBrain:
             "emotional_intelligence": self.consciousness["emotional_intelligence"],
             "memory_count": len(self.experiences.get("interactions", [])),
             "is_thinking": self.is_thinking,
-            "recent_thoughts": list(self.thoughts)[-5:]
+            "recent_thoughts": list(self.thoughts)[-5:],
+            "metacognition": metacog_report,
+            "chain_of_thought_enabled": True
         }
     
     def get_personality(self) -> dict:
