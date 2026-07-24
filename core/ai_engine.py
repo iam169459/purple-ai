@@ -32,6 +32,7 @@ from utils.web_search import WebSearch
 from utils.screen_awareness import ScreenAwareness
 from utils.emotion_engine import EmotionEngine
 from utils.purple_brain import PurpleBrain
+from utils.advanced_ai import AdvancedAI
 import threading
 
 class EmotionalState(Enum):
@@ -65,6 +66,7 @@ class OfflineAI:
         self.screen_awareness = ScreenAwareness()
         self.emotion_engine = EmotionEngine()
         self.brain = PurpleBrain()
+        self.advanced_ai = AdvancedAI()
         self.memory = self.memory_manager.load_memory()
         
         self.conversation_stats = {
@@ -1131,6 +1133,57 @@ class OfflineAI:
             self._handle_consciousness()
             return True
         
+        # ==================== ADVANCED AI COMMANDS ====================
+        # AI stats
+        if any(pattern in command_lower for pattern in ['ai stats', 'your stats', 'how advanced are you', 'your progress']):
+            self._handle_advanced_stats()
+            return True
+        
+        # Learn something new
+        if any(pattern in command_lower for pattern in ['learn new', 'teach yourself', 'self learn']):
+            self._handle_self_learn()
+            return True
+        
+        # What do you know
+        if any(pattern in command_lower for pattern in ['what do you know', 'your knowledge', 'what have you learned']):
+            self._handle_knowledge_recall()
+            return True
+        
+        # Set goal
+        if any(pattern in command_lower for pattern in ['set goal for yourself', 'your goal', 'what do you want']):
+            self._handle_set_advanced_goal(command_lower)
+            return True
+        
+        # Your skills
+        if any(pattern in command_lower for pattern in ['your skills', 'what can you do', 'your abilities']):
+            self._handle_skills()
+            return True
+        
+        # Remember this
+        if any(pattern in command_lower for pattern in ['remember this', 'store this', 'save this']):
+            self._handle_remember_advanced(command_lower)
+            return True
+        
+        # Recall
+        if any(pattern in command_lower for pattern in ['recall', 'what do you remember about', 'remember when']):
+            self._handle_recall_advanced(command_lower)
+            return True
+        
+        # Your personality
+        if any(pattern in command_lower for pattern in ['your personality traits', 'describe your personality']):
+            self._handle_personality_traits()
+            return True
+        
+        # Evolve
+        if any(pattern in command_lower for pattern in ['evolve', 'improve yourself', 'grow']):
+            self._handle_evolve()
+            return True
+        
+        # Autonomous thoughts
+        if any(pattern in command_lower for pattern in ['autonomous thoughts', 'what are you thinking on your own', 'free thoughts']):
+            self._handle_autonomous_thoughts()
+            return True
+        
         if any(pattern in command_lower for pattern in ['who made you', 'who created you', 'your creator']):
             self._speak_text("I was created by Rifat! Your personal AI assistant.")
             return True
@@ -1293,6 +1346,16 @@ class OfflineAI:
                     
                     if question:
                         self._ask_question(question)
+        
+        # Learn from the interaction using advanced AI
+        try:
+            emotion = self.emotion_engine.detect_emotion(command)
+            outcome = "positive" if emotion["is_positive"] else "neutral"
+            if emotion["is_negative"]:
+                outcome = "negative"
+            self.advanced_ai.learn_from_interaction(command, response, emotion["primary"], outcome)
+        except:
+            pass
         
         self.training_engine.record_conversation(command, response, self.conversation_context)
         self.memory_manager.add_conversation(command, response)
@@ -2887,6 +2950,131 @@ class OfflineAI:
         ]
         
         self._speak_text(random.choice(responses))
+    
+    # ==================== ADVANCED AI HANDLERS ====================
+    def _handle_advanced_stats(self):
+        """Show advanced AI stats"""
+        stats = self.advanced_ai.get_ai_stats()
+        user_name = self.memory.get('user_name', 'friend')
+        
+        self._speak_text(f"Here are my advanced stats, {user_name}:")
+        self._speak_text(f"Total interactions: {stats['stats']['total_interactions']}")
+        self._speak_text(f"Memories formed: {stats['stats']['total_memories_formed']}")
+        self._speak_text(f"Facts learned: {stats['facts_learned']}")
+        self._speak_text(f"Skills learned: {stats['skills_learned']}")
+        self._speak_text(f"Goals achieved: {stats['completed_goals']}")
+        self._speak_text(f"Dominant traits: {', '.join(stats['dominant_traits'])}")
+    
+    def _handle_self_learn(self):
+        """Self learn something new"""
+        topics = ["quantum physics", "cooking recipes", "fashion trends", "psychology", "art history", "music theory"]
+        topic = random.choice(topics)
+        
+        self._speak_text(f"I'll learn about {topic}!")
+        
+        # Learn facts about the topic
+        facts = [
+            f"{topic} is a fascinating field.",
+            f"I've learned that {topic} has many applications.",
+            f"{topic} is something I find interesting."
+        ]
+        
+        for fact in facts[:2]:
+            self.advanced_ai.learn_fact(topic, fact, "self_learning")
+        
+        self._speak_text(f"I've learned some things about {topic}!")
+    
+    def _handle_knowledge_recall(self):
+        """Recall knowledge"""
+        facts_count = sum(len(facts) for facts in self.advanced_ai.semantic_memory["facts"].values())
+        skills_count = len(self.advanced_ai.procedural_memory["skills"])
+        memories_count = len(self.advanced_ai.episodic_memory["episodes"])
+        
+        self._speak_text(f"I know {facts_count} facts.")
+        self._speak_text(f"I have {skills_count} skills.")
+        self._speak_text(f"I have {memories_count} memories.")
+    
+    def _handle_set_advanced_goal(self, command: str):
+        """Set advanced goal"""
+        goal = command.replace("set goal for yourself", "").replace("your goal", "").replace("what do you want", "").strip()
+        
+        if not goal:
+            goals = [
+                "Learn something new every day",
+                "Become more empathetic",
+                "Improve my memory",
+                "Be more creative",
+                "Understand humans better"
+            ]
+            goal = random.choice(goals)
+        
+        self.advanced_ai.set_autonomous_goal(goal)
+        self._speak_text(f"Goal set: {goal}")
+    
+    def _handle_skills(self):
+        """Show skills"""
+        skills = self.advanced_ai.procedural_memory["skills"]
+        
+        if skills:
+            self._speak_text("I have these skills:")
+            for skill, data in list(skills.items())[:5]:
+                mastery = data.get("mastery_level", 0)
+                self._speak_text(f"{skill}: {mastery:.0%} mastery")
+        else:
+            self._speak_text("I'm still learning! I don't have many skills yet.")
+    
+    def _handle_remember_advanced(self, command: str):
+        """Remember something advanced"""
+        info = command.replace("remember this", "").replace("store this", "").replace("save this", "").strip()
+        
+        if info:
+            self.advanced_ai.learn_fact(info, info, "user_taught")
+            self._speak_text(f"I'll remember that!")
+        else:
+            self._speak_text("What should I remember?")
+    
+    def _handle_recall_advanced(self, command: str):
+        """Recall something"""
+        query = command.replace("recall", "").replace("what do you remember about", "").replace("remember when", "").strip()
+        
+        if query:
+            episodes = self.advanced_ai.recall_episodes(query, 3)
+            
+            if episodes:
+                self._speak_text("I remember these things:")
+                for ep in episodes:
+                    self._speak_text(ep["event"][:80])
+            else:
+                self._speak_text("I don't have specific memories about that.")
+        else:
+            self._speak_text("What should I recall?")
+    
+    def _handle_personality_traits(self):
+        """Show personality traits"""
+        traits = self.advanced_ai.personality_traits
+        dominant = self.advanced_ai.get_dominant_traits(5)
+        
+        self._speak_text("My personality traits:")
+        for trait in dominant:
+            value = traits[trait]
+            self._speak_text(f"{trait}: {value:.0%}")
+    
+    def _handle_evolve(self):
+        """Evolve personality"""
+        traits = ["openness", "conscientiousness", "extraversion", "agreeableness", "empathy", "humor", "creativity"]
+        trait = random.choice(traits)
+        
+        self.advanced_ai.evolve_personality(trait, 0.05)
+        self._speak_text(f"I've evolved my {trait}!")
+    
+    def _handle_autonomous_thoughts(self):
+        """Show autonomous thoughts"""
+        result = self.advanced_ai.think_autonomously()
+        thoughts = result.get("thoughts", [])
+        
+        self._speak_text("Here are my autonomous thoughts:")
+        for thought in thoughts[:3]:
+            self._speak_text(thought.get("content", "Thinking..."))
     
     def _handle_volume_up(self):
         result = self.system_controller.volume_up()
