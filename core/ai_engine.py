@@ -30,6 +30,7 @@ from utils.internet_learning import InternetLearner
 from utils.account_manager import AccountManager
 from utils.web_search import WebSearch
 from utils.screen_awareness import ScreenAwareness
+from utils.emotion_engine import EmotionEngine
 import threading
 
 class EmotionalState(Enum):
@@ -61,6 +62,7 @@ class OfflineAI:
         self.account_manager = AccountManager()
         self.web_search = WebSearch()
         self.screen_awareness = ScreenAwareness()
+        self.emotion_engine = EmotionEngine()
         self.memory = self.memory_manager.load_memory()
         
         self.conversation_stats = {
@@ -1015,6 +1017,62 @@ class OfflineAI:
             self._handle_start_watching()
             return True
         
+        # ==================== EMOTION COMMANDS ====================
+        # How am I feeling
+        if any(pattern in command_lower for pattern in ['how am i feeling', 'what is my mood', 'how do i feel', 'my mood']):
+            self._handle_how_am_i_feeling()
+            return True
+        
+        # Mood trend
+        if any(pattern in command_lower for pattern in ['mood trend', 'my mood trend', 'how have i been']):
+            self._handle_mood_trend()
+            return True
+        
+        # I feel sad
+        if any(pattern in command_lower for pattern in ['i feel sad', 'feeling sad', 'i am sad', 'i\'m sad']):
+            self._handle_emotion_response(command_lower, 'sadness')
+            return True
+        
+        # I feel happy
+        if any(pattern in command_lower for pattern in ['i feel happy', 'feeling happy', 'i am happy', 'i\'m happy', 'i feel good']):
+            self._handle_emotion_response(command_lower, 'joy')
+            return True
+        
+        # I feel angry
+        if any(pattern in command_lower for pattern in ['i feel angry', 'feeling angry', 'i am angry', 'i\'m angry', 'i feel mad']):
+            self._handle_emotion_response(command_lower, 'anger')
+            return True
+        
+        # I feel scared
+        if any(pattern in command_lower for pattern in ['i feel scared', 'feeling scared', 'i am scared', 'i\'m scared', 'i feel afraid', 'i feel worried']):
+            self._handle_emotion_response(command_lower, 'fear')
+            return True
+        
+        # I feel tired
+        if any(pattern in command_lower for pattern in ['i feel tired', 'feeling tired', 'i am tired', 'i\'m tired', 'exhausted']):
+            self._handle_emotion_response(command_lower, 'tired')
+            return True
+        
+        # I love you
+        if any(pattern in command_lower for pattern in ['i love you', 'love you', 'you are amazing', 'you are great']):
+            self._handle_emotion_response(command_lower, 'love')
+            return True
+        
+        # Thank you
+        if any(pattern in command_lower for pattern in ['thank you', 'thanks', 'you helped me', 'grateful']):
+            self._handle_emotion_response(command_lower, 'gratitude')
+            return True
+        
+        # I'm proud
+        if any(pattern in command_lower for pattern in ['i feel proud', 'i am proud', 'i did it', 'i succeeded', 'i won']):
+            self._handle_emotion_response(command_lower, 'pride')
+            return True
+        
+        # Console emotion
+        if any(pattern in command_lower for pattern in ['console me', 'cheer me up', 'make me feel better', 'i need comfort']):
+            self._handle_console_user()
+            return True
+        
         if any(pattern in command_lower for pattern in ['who made you', 'who created you', 'your creator']):
             self._speak_text("I was created by Rifat! Your personal AI assistant.")
             return True
@@ -1138,20 +1196,40 @@ class OfflineAI:
         return True
     
     def _handle_general_conversation(self, command: str):
-        improved_response = self.training_engine.get_improved_response(command)
+        # Detect emotion from user's message
+        detected_emotion = self.emotion_engine.detect_emotion(command)
+        user_name = self.memory.get('user_name', 'friend')
         
-        if improved_response and random.random() < 0.3:
-            self._speak_text(improved_response)
-            response = improved_response
+        # Track the mood
+        self.emotion_engine.track_mood(detected_emotion)
+        
+        # Check if we should respond with empathy
+        if detected_emotion["is_negative"] and detected_emotion["intensity"] > 0.3:
+            # Respond with empathy first
+            empathy_response = self.emotion_engine.get_empathetic_response(detected_emotion, user_name)
+            self._speak_text(empathy_response)
+            response = empathy_response
+        elif detected_emotion["primary"] == "love" or detected_emotion["primary"] == "gratitude":
+            # Respond warmly to positive emotions
+            empathy_response = self.emotion_engine.get_empathetic_response(detected_emotion, user_name)
+            self._speak_text(empathy_response)
+            response = empathy_response
         else:
-            thought_response, question = self.thinking_engine.generate_thought(command, self.conversation_context)
-            response = self.response_generator.generate_response(command, self.memory)
+            # Normal response flow
+            improved_response = self.training_engine.get_improved_response(command)
             
-            # Use only one response, not both
-            self._speak_text(response)
-            
-            if question:
-                self._ask_question(question)
+            if improved_response and random.random() < 0.3:
+                self._speak_text(improved_response)
+                response = improved_response
+            else:
+                thought_response, question = self.thinking_engine.generate_thought(command, self.conversation_context)
+                response = self.response_generator.generate_response(command, self.memory)
+                
+                # Use only one response, not both
+                self._speak_text(response)
+                
+                if question:
+                    self._ask_question(question)
         
         self.training_engine.record_conversation(command, response, self.conversation_context)
         self.memory_manager.add_conversation(command, response)
@@ -2534,6 +2612,86 @@ class OfflineAI:
         """Start watching screen"""
         result = self.screen_awareness.start_monitoring()
         self._speak_text(result["message"])
+    
+    # ==================== EMOTION HANDLERS ====================
+    def _handle_how_am_i_feeling(self):
+        """Tell user how they're feeling"""
+        user_name = self.memory.get('user_name', 'friend')
+        mood = self.emotion_engine.get_mood_trend()
+        
+        if mood == "positive":
+            responses = [
+                f"You seem to be in a good mood, {user_name}! Keep it up!",
+                f"Your vibes are positive today, {user_name}!",
+                f"You're feeling great, {user_name}! I can tell!"
+            ]
+        elif mood == "negative":
+            responses = [
+                f"I sense you might be feeling down, {user_name}. I'm here for you.",
+                f"You seem a bit off today, {user_name}. Want to talk about it?",
+                f"I'm here if you need someone to listen, {user_name}."
+            ]
+        else:
+            responses = [
+                f"You seem balanced today, {user_name}.",
+                f"You're doing okay, {user_name}.",
+                f"Neutral vibes today, {user_name}. That's fine!"
+            ]
+        
+        self._speak_text(random.choice(responses))
+    
+    def _handle_mood_trend(self):
+        """Show mood trend"""
+        user_name = self.memory.get('user_name', 'friend')
+        trend = self.emotion_engine.get_mood_trend()
+        history = self.emotion_engine.data.get("mood_history", [])[-10:]
+        
+        if history:
+            recent_emotions = [h.get("emotion", "neutral") for h in history]
+            emotion_str = ", ".join(recent_emotions[:5])
+            self._speak_text(f"Your recent moods: {emotion_str}")
+        else:
+            self._speak_text(f"I'm still learning about your emotions, {user_name}. Keep chatting with me!")
+    
+    def _handle_emotion_response(self, command: str, emotion_type: str):
+        """Handle when user expresses an emotion"""
+        user_name = self.memory.get('user_name', 'friend')
+        
+        detected_emotion = {
+            "primary": emotion_type,
+            "intensity": 0.7,
+            "is_negative": emotion_type in ["sadness", "anger", "fear"],
+            "is_positive": emotion_type in ["joy", "love", "gratitude", "pride"]
+        }
+        
+        self.emotion_engine.track_mood(detected_emotion)
+        
+        response = self.emotion_engine.get_empathetic_response(detected_emotion, user_name)
+        self._speak_text(response)
+    
+    def _handle_console_user(self):
+        """Console the user"""
+        user_name = self.memory.get('user_name', 'friend')
+        
+        mood = self.emotion_engine.get_mood_trend()
+        
+        if mood == "negative":
+            messages = [
+                f"Hey {user_name}, I know things are tough right now. But I'm here with you.",
+                f"Remember {user_name}, even the darkest night ends with a sunrise.",
+                f"You're stronger than you think, {user_name}. This will pass.",
+                f"I believe in you, {user_name}. Always.",
+                f"Take a deep breath, {user_name}. I'm right here."
+            ]
+        else:
+            messages = [
+                f"You're doing great, {user_name}! Keep going!",
+                f"I'm proud of you, {user_name}!",
+                f"You're amazing, {user_name}! Never forget that!",
+                f"The world is better with you in it, {user_name}!"
+            ]
+        
+        self._speak_text(random.choice(messages))
     
     def _handle_volume_up(self):
         result = self.system_controller.volume_up()
