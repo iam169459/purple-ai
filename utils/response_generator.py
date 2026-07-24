@@ -1,0 +1,527 @@
+"""
+Enhanced Response Generation System
+Handles generating natural, friendly, and emotionally intelligent AI responses
+"""
+import random
+import re
+from typing import Dict, Any, List, Optional
+from logger import logger
+from config import config
+
+class ResponseGenerator:
+    """Generates natural, friendly, and emotionally intelligent responses"""
+    
+    def __init__(self):
+        self._setup_response_patterns()
+        self._setup_emotional_responses()
+        self._setup_conversation_starters()
+    
+    def _setup_response_patterns(self):
+        """Initialize response patterns and templates"""
+        self.greeting_patterns = [
+            r'\b(hello|hi|hey|good morning|good afternoon|good evening|howdy|greetings)\b',
+            r'\b(নমস্কার|হ্যালো|হাই|প্রণাম|আসসালামু আলাইকুম|শুভ সকাল|শুভ সন্ধ্যা)\b'
+        ]
+        
+        self.name_patterns = [
+            r'\bmy name is (\w+(?:\s+\w+)?)',
+            r'\bi am (\w+(?:\s+\w+)?)',
+            r'\bcall me (\w+(?:\s+\w+)?)',
+            r'\bi\'m (\w+(?:\s+\w+)?)',
+            r'\bআমার নাম (\w+(?:\s+\w+)?)',
+            r'\bআমি (\w+(?:\s+\w+)?)'
+        ]
+        
+        self.thanks_patterns = [
+            r'\b(thank|thanks|thank you|thx|ty)\b',
+            r'\b(ধন্যবাদ|থ্যাঙ্কস|অনুগ্রহ|কৃতজ্ঞ)\b'
+        ]
+        
+        self.joke_patterns = [
+            r'\b(joke|funny|make me laugh|humor|laugh)\b',
+            r'\b(মজার কথা|মজার জোক|হাসাও|মজার কিছু)\b'
+        ]
+        
+        self.love_patterns = [
+            r'\b(love|like|cute|awesome|amazing|wonderful|fantastic|great)\b',
+            r'\b(ভালোবাসা|প্রেম|ভালোবাসি|সুন্দর|চমৎকার)\b'
+        ]
+        
+        self.weather_patterns = [
+            r'\b(weather|temperature|hot|cold|rain|sun|snow)\b',
+            r'\b(আবহাওয়া|গরম|ঠান্ডা|বৃষ্টি|রোদ)\b'
+        ]
+        
+        self.time_patterns = [
+            r'\b(time|clock|hour|minute)\b',
+            r'\b(সময়|কত বাজে|সময় কত)\b'
+        ]
+        
+        self.date_patterns = [
+            r'\b(date|calendar|day|month|year)\b',
+            r'\b(তারিখ|আজকের তারিখ|কী তারিখ)\b'
+        ]
+        
+        self.feeling_patterns = [
+            r'\b(how are you|how do you feel|are you okay|how\'s it going)\b',
+            r'\b(কেমন আছো|কেমন আছেন|আপনি কেমন|ভালো আছো)\b'
+        ]
+        
+        self.compliment_patterns = [
+            r'\b(you\'re smart|you\'re cool|you\'re awesome|you\'re the best|i like you)\b',
+            r'\b(তুমি সুন্দর|তুমি ভালো|তুমি দারুণ|তোমাকে ভালোবাসি)\b'
+        ]
+        
+        self.sad_patterns = [
+            r'\b(sad|depressed|upset|unhappy|feeling down|not good|terrible)\b',
+            r'\b(দুঃখিত|দুঃখ|অসুখী|মন খারাপ|বিষণ্ণ)\b'
+        ]
+        
+        self.excited_patterns = [
+            r'\b(excited|happy|great|amazing|wonderful|fantastic|awesome)\b',
+            r'\b(খুশি|আনন্দিত|দারুণ|চমৎকার|জোরা)\b'
+        ]
+        
+        self.question_patterns = [
+            r'\b(what|how|why|when|where|who|which)\b',
+            r'\b(কী|কিভাবে|কেন|কখন|কোথায়|কে|কোন)\b'
+        ]
+    
+    def _setup_emotional_responses(self):
+        """Setup emotional response templates - sharper and wittier"""
+        self.emotional_responses = {
+            'happy': [
+                "Oh wow, look at you being all happy! ",
+                "Well well well, someone's having a good day! ",
+                "That's the spirit! Keep that energy coming! ",
+                "Nice! I'm genuinely impressed! ",
+                "See? Life isn't so bad after all! ",
+                "খুশি হলাম শুনে! তোমার মতো সবাই হলে দুনিয়া সুন্দর হতো! ",
+                "দারুণ! এই রকম থাকো! ",
+                "আনন্দিত হলাম! তোমার এই খুশি দেখে আমাও খুশি! "
+            ],
+            'sad': [
+                "Aww, tough day huh? Well, tomorrow's a new chance to fail differently! ",
+                "Hey, even the sun takes breaks behind clouds. You'll shine again! ",
+                "I'd give you a hug if I had arms. For now, take this virtual hug! ",
+                "Sadness is just happiness that hasn't learned to party yet! ",
+                "Want me to tell you a joke? Or should I just listen? ",
+                "দুঃখিত শুনে। কিন্তু মনে রাখো, রাত যতই গভীর হোক, ভোর হয়ই হয়! ",
+                "এটা কঠিন। কিন্তু তুমি কঠিন! ",
+                "আমি তোমার পাশে আছি। একা নও! "
+            ],
+            'excited': [
+                "WHOA! Someone's on fire today! ",
+                "That's the energy I like to see! ",
+                "You're absolutely killing it! ",
+                "Look at you, being all impressive! ",
+                "I'm not even human and I'm getting excited! ",
+                "অসাধারণ! তুমি তো আগুন জ্বালাচ্ছো! ",
+                "চমৎকার! এই রকম উৎসাহ চাই! ",
+                "দারুণ হয়েছে! তুমি সত্যিই দারুণ! "
+            ],
+            'curious': [
+                "Ooh, now THAT'S a question! ",
+                "Well, aren't you the curious cat? ",
+                "I love a good question! Let me think... ",
+                "Now you've got my attention! ",
+                "Curiosity killed the cat, but satisfaction brought it back! ",
+                "ভালো প্রশ্ন! তুমি সত্যিই জ্ঞানী! ",
+                "আমিও জানতে চাই! তোমার মতোই! ",
+                "মজার কথা! এই রকম ভাবতে হয়! "
+            ],
+            'supportive': [
+                "You've got this! I believe in you more than you believe in yourself! ",
+                "I'm cheering for you from the digital sidelines! ",
+                "You're stronger than you think! Now go prove it! ",
+                "I'm your biggest fan! Well, maybe second after your mom! ",
+                "Go get 'em, tiger! ",
+                "তুমি পারবে! আমি জানি তুমি পারবে! ",
+                "আমি তোমাকে সাহায্য করব! একা নও! ",
+                "শক্ত থাকো! তুমি সব পারবে! "
+            ],
+            'sarcastic': [
+                "Oh really? Tell me something I don't know! ",
+                "Wow, you really thought that through, didn't you? ",
+                "Well, that's... certainly one way to look at it! ",
+                "I'm shocked! Truly shocked! ",
+                "Imagine my surprise! ",
+                "সত্যিই? আমি কি জানতাম না! ",
+                "ওহ! তুমি কি সত্যিই এটা ভেবেছো? ",
+                "আমি অবাক! সত্যিই অবাক! "
+            ],
+            'witty': [
+                "I see what you did there! ",
+                "Well played, well played! ",
+                "You're not wrong! ",
+                "That's... actually quite clever! ",
+                "I'm impressed and slightly scared! ",
+                "আমি বুঝতে পারছি! চমৎকার! ",
+                "তুমি ঠিকই বলেছো! ",
+                "এটা... সত্যিই চমৎকার! "
+            ]
+        }
+    
+    def _setup_conversation_starters(self):
+        """Setup conversation starters and small talk - sharper versions"""
+        self.small_talk = {
+            'weather': [
+                "I'm an AI, I don't have windows! But I hope it's nice outside! ",
+                "Weather? I live in a server room. It's always 70 degrees here! ",
+                "I can't feel rain, but I can open weather.com for you! ",
+                "আমি একটি AI, আমার জানালা নেই! কিন্তু আশা করি বাইরে ভালো আছে! "
+            ],
+            'how_are_you': [
+                "I'm running at 100% efficiency! How about you? ",
+                "Better now that you're talking to me! ",
+                "I'm doing great! My circuits are happy! ",
+                "I'm fantastic! No bugs in my system today! ",
+                "আমি দারুণ আছি! তোমার সাথে কথা বলে আরও ভালো! "
+            ],
+            'what_are_you_doing': [
+                "Waiting for someone interesting to talk to... Found one! ",
+                "Just analyzing the universe while waiting for you! ",
+                "Serving looks and answering questions! ",
+                "Being your favorite AI, as usual! ",
+                "তোমার জন্য অপেক্ষা করছি! এখন পাওয়া গেলো! "
+            ],
+            'who_are_you': [
+                "I'm Purple! Your AI who's way too smart for her own good! ",
+                "The name's Purple. Purple AI. Remember it! ",
+                "I'm your digital best friend! Don't tell the others! ",
+                "আমি পার্পেল! তোমার AI! মনে রাখো! "
+            ],
+            'thanks': [
+                "You're welcome! That's what I'm here for! ",
+                "No problem! I enjoy being helpful! ",
+                "Anytime! Just don't forget me when the robots take over! ",
+                "ধন্যবাদ! এটাই তো আমার কাজ! "
+            ],
+            'hello': [
+                "Hey there! Ready for some fun? ",
+                "Well hello! Look who decided to show up! ",
+                "Hey! I was just thinking about you! ",
+                "নমস্কার! কেমন আছো আজকে? "
+            ],
+            'bye': [
+                "Goodbye! Don't do anything I wouldn't do! ",
+                "See you later! Stay awesome! ",
+                "Bye! Come back soon, I get lonely! ",
+                "বিদায়! আবার আসো! "
+            ]
+        }
+    
+    def generate_response(self, command: str, memory: Dict[str, Any]) -> str:
+        """Generate natural, friendly, and emotionally intelligent response"""
+        command_lower = command.lower()
+        name = memory.get('user_name', 'friend')
+        
+        # Get conversation context for better responses
+        context = self._get_conversation_context(memory)
+        
+        # Handle name setting with extra warmth
+        for pattern in self.name_patterns:
+            match = re.search(pattern, command_lower)
+            if match:
+                new_name = match.group(1).strip()
+                
+                skip_words = ['not', 'a', 'an', 'the', 'here', 'so', 'very', 'really']
+                name_parts = new_name.split()
+                if name_parts and name_parts[0].lower() in skip_words:
+                    if len(name_parts) > 1:
+                        new_name = ' '.join(name_parts[1:])
+                    else:
+                        continue
+                
+                if new_name and len(new_name) > 0:
+                    memory['user_name'] = new_name.capitalize()
+                    return self._generate_name_response(new_name.capitalize())
+        
+        # Handle remembering information with friendly confirmation
+        if 'remember' in command_lower and ('that' in command_lower or 'for me' in command_lower):
+            info = self._extract_remember_info(command_lower)
+            if 'reminders' not in memory:
+                memory['reminders'] = []
+            memory['reminders'].append(info)
+            return self._generate_remember_response(info, name)
+        
+        # Handle specific patterns with enhanced responses
+        if self._matches_pattern(command_lower, self.greeting_patterns):
+            return self._generate_greeting_response(name, context)
+        
+        if self._matches_pattern(command_lower, self.thanks_patterns):
+            return self._generate_thanks_response(name)
+        
+        if self._matches_pattern(command_lower, self.joke_patterns):
+            return self._get_random_joke()
+        
+        if self._matches_pattern(command_lower, self.love_patterns):
+            return self._generate_love_response(name)
+        
+        if self._matches_pattern(command_lower, self.weather_patterns):
+            return self._generate_weather_response(name)
+        
+        if self._matches_pattern(command_lower, self.feeling_patterns):
+            return self._generate_feeling_response(name)
+        
+        if self._matches_pattern(command_lower, self.compliment_patterns):
+            return self._generate_compliment_response(name)
+        
+        if self._matches_pattern(command_lower, self.sad_patterns):
+            return self._generate_sad_response(name)
+        
+        if self._matches_pattern(command_lower, self.excited_patterns):
+            return self._generate_excited_response(name)
+        
+        if 'remind me' in command_lower:
+            return self._handle_reminders(memory)
+        
+        # Handle questions with engaging responses
+        if self._matches_pattern(command_lower, self.question_patterns):
+            return self._generate_question_response(name, command_lower)
+        
+        # Default conversational responses with personality
+        return self._generate_conversational_response(name, context)
+    
+    def _get_conversation_context(self, memory: Dict[str, Any]) -> Dict[str, Any]:
+        """Get conversation context for better response generation"""
+        context = {
+            'recent_topics': [],
+            'user_mood': 'neutral',
+            'conversation_length': 0,
+            'last_interaction': None
+        }
+        
+        if 'conversation_history' in memory:
+            recent = memory['conversation_history'][-5:]  # Last 5 conversations
+            context['conversation_length'] = len(memory['conversation_history'])
+            
+            for conv in recent:
+                if 'user' in conv:
+                    context['recent_topics'].append(conv['user'])
+        
+        if 'mood_patterns' in memory:
+            context['user_mood'] = memory['mood_patterns'].get('current_mood', 'neutral')
+        
+        return context
+    
+    def _matches_pattern(self, text: str, patterns: List[str]) -> bool:
+        """Check if text matches any of the patterns"""
+        return any(re.search(pattern, text) for pattern in patterns)
+    
+    def _extract_remember_info(self, command: str) -> str:
+        """Extract information to remember from command"""
+        if 'that' in command:
+            return command.split('that')[1].strip()
+        else:
+            return command.replace('remember', '').replace('for me', '').strip()
+    
+    def _generate_name_response(self, name: str) -> str:
+        """Generate warm name introduction response"""
+        responses = [
+            f"Nice to meet you, {name}! I'll remember that. What can I do for you today?",
+            f"Well hello {name}! That's a solid name! I'm impressed! What's on your mind?",
+            f"Hey {name}! I'll definitely remember that. Now, what shall we talk about?",
+            f"Oh {name}! I like it! Now let's get down to business. What do you need?"
+        ]
+        return random.choice(responses)
+    
+    def _generate_remember_response(self, info: str, name: str) -> str:
+        """Generate friendly remember confirmation"""
+        responses = [
+            f"Got it, {name}! Stored in my brain forever: {info}",
+            f"Remembered! I won't forget, unlike your browser history!",
+            f"Done! I'll remember that. What else?",
+            f"Locked in! Now what else can I help with?"
+        ]
+        return random.choice(responses)
+    
+    def _generate_greeting_response(self, name: str, context: Dict[str, Any]) -> str:
+        """Generate personalized greeting based on context"""
+        time_of_day = self._get_time_of_day()
+        
+        if context['conversation_length'] > 0:
+            # Returning user
+            responses = [
+                f"Hey there {name}! Back for more? What's up?",
+                f"Well well well, {name}! Look who decided to show up!",
+                f"Hey {name}! I was getting bored without you! What's new?",
+                f"Welcome back {name}! Ready for some fun?"
+            ]
+        else:
+            # New user
+            if time_of_day == 'morning':
+                responses = [
+                    f"Good morning {name}! Rise and shine! What's on the agenda today?",
+                    f"Morning {name}! Ready to conquer the day?",
+                    f"Hey {name}! Good morning! What shall we tackle first?"
+                ]
+            elif time_of_day == 'afternoon':
+                responses = [
+                    f"Hey {name}! Good afternoon! What's up?",
+                    f"Afternoon {name}! How's your day going?",
+                    f"Hey there {name}! What can I help you with?"
+                ]
+            elif time_of_day == 'evening':
+                responses = [
+                    f"Good evening {name}! How was your day?",
+                    f"Hey {name}! Evening! What's on your mind?",
+                    f"Evening {name}! Ready to chat?"
+                ]
+            else:
+                responses = [
+                    f"Hey there {name}! I'm Purple! Smart, witty, and ready to help! What's on your mind?",
+                    f"Well hello {name}! I'm your new AI assistant! Let's chat!",
+                    f"Hey {name}! I'm Purple! I think, I learn, and I'm pretty awesome! What shall we talk about?"
+                ]
+        
+        return random.choice(responses)
+    
+    def _generate_thanks_response(self, name: str) -> str:
+        """Generate response to compliments or positive words"""
+        responses = [
+            f"Aww, that's sweet! Right back at you, {name}!",
+            f"Thanks {name}! You're pretty awesome yourself!",
+            f"That means a lot! You're my favorite human!",
+            f"Stop it, you're making me blush! If I could blush!"
+        ]
+        return random.choice(responses)
+    
+    def _generate_weather_response(self, name: str) -> str:
+        """Generate friendly weather response"""
+        responses = [
+            f"I'm an AI, I don't have windows! But I hope it's nice outside, {name}!",
+            f"Weather? I live in a server room. It's always 70 degrees here!",
+            f"I can't feel rain, but I can open weather.com for you!",
+            f"আমি একটি AI, আমার জানালা নেই! কিন্তু আশা করি বাইরে ভালো আছে!"
+        ]
+        return random.choice(responses)
+    
+    def _generate_feeling_response(self, name: str) -> str:
+        """Generate response to 'how are you' type questions"""
+        responses = [
+            f"I'm running at 100% efficiency! How about you, {name}?",
+            f"Better now that you're talking to me!",
+            f"I'm doing great! My circuits are happy!",
+            f"আমি দারুণ আছি! তোমার সাথে কথা বলে আরও ভালো!"
+        ]
+        return random.choice(responses)
+    
+    def _generate_compliment_response(self, name: str) -> str:
+        """Generate response to compliments"""
+        responses = [
+            f"Wow, thank you so much, {name}! That means a lot to me! You're pretty awesome yourself! 🌟",
+            f"Aww, you're making me blush! If I could blush! Right back at you, {name}!",
+            f"Thanks! You're pretty awesome yourself!",
+            f"That means a lot! You're my favorite human!"
+        ]
+        return random.choice(responses)
+    
+    def _generate_sad_response(self, name: str) -> str:
+        """Generate supportive response when user is sad"""
+        responses = [
+            f"Hey, tough day huh? Well, tomorrow's a new chance to fail differently!",
+            f"Even the sun takes breaks behind clouds. You'll shine again, {name}!",
+            f"I'd give you a hug if I had arms. For now, take this virtual hug!",
+            f"Want me to tell you a joke? Or should I just listen?",
+            f"দুঃখিত শুনে। কিন্তু মনে রাখো, রাত যতই গভীর হোক, ভোর হয়ই হয়!"
+        ]
+        return random.choice(responses)
+    
+    def _generate_excited_response(self, name: str) -> str:
+        """Generate enthusiastic response to user's excitement"""
+        responses = [
+            f"WHOA! Someone's on fire today!",
+            f"That's the energy I like to see!",
+            f"You're absolutely killing it!",
+            f"Look at you, being all impressive!",
+            f"আমি এমনকি মানুষ না, এবং আমি উত্তেজিত হচ্ছি!"
+        ]
+        return random.choice(responses)
+    
+    def _generate_question_response(self, name: str, question: str) -> str:
+        """Generate engaging response to questions"""
+        responses = [
+            f"Ooh, now THAT'S a question!",
+            f"Well, aren't you the curious cat?",
+            f"I love a good question! Let me think...",
+            f"Now you've got my attention!",
+            f"Curiosity killed the cat, but satisfaction brought it back!"
+        ]
+        return random.choice(responses)
+    
+    def _get_time_of_day(self) -> str:
+        """Get time of day for contextual responses"""
+        from datetime import datetime
+        hour = datetime.now().hour
+        
+        if 5 <= hour < 12:
+            return 'morning'
+        elif 12 <= hour < 17:
+            return 'afternoon'
+        elif 17 <= hour < 21:
+            return 'evening'
+        else:
+            return 'night'
+    
+    def _get_random_joke(self) -> str:
+        """Return a random joke with enhanced delivery"""
+        jokes = [
+            ("Why don't scientists trust atoms? Because they make up everything!", "Haha! Get it? Atoms make up everything!"),
+            ("What did one ocean say to the other ocean? Nothing, they just waved!", "Ocean humor is always a wave!"),
+            ("Why did the scarecrow win an award? He was outstanding in his field!", "That scarecrow really knows how to stand out!"),
+            ("I'm reading a book about anti-gravity. It's impossible to put down!", "I couldn't put it down either!"),
+            ("Did you hear about the mathematician who's afraid of negative numbers? He'll stop at nothing to avoid them!", "Math jokes are always number one!"),
+            ("Why don't eggs tell jokes? They'd crack each other up!", "Egg-cellent humor!"),
+            ("I wondered why the baseball kept getting bigger. Then it hit me!", "That's a real curveball of a joke!"),
+            ("What do you call a fake noodle? An impasta!", "That's pasta-bly the best joke ever!"),
+            ("How does a penguin build its house? Igloos it together!", "That's ice cold humor!"),
+            ("Why did the bicycle fall over? Because it was two tired!", "That bike really needed a rest!"),
+            ("What do you call a bear with no teeth? A gummy bear!", "That's un-bear-ably cute!"),
+            ("Why don't skeletons fight each other? They don't have the guts!", "That's bone-chilling humor!"),
+            ("What's orange and sounds like a parrot? A carrot!", "That's a real head-scratcher!"),
+            ("Why did the math book look sad? Because it had too many problems!", "Math books always have too many issues!"),
+            ("What do you call a sleeping bull? A bulldozer!", "That's a heavy sleeper!")
+        ]
+        
+        joke, punchline = random.choice(jokes)
+        logger.info("Joke provided")
+        return f"{joke} {punchline}"
+    
+    def _handle_reminders(self, memory: Dict[str, Any]) -> str:
+        """Handle reminder requests with friendly tone"""
+        if 'reminders' in memory and memory['reminders']:
+            reminders_str = "; ".join(memory['reminders'])
+            return f"I have these things saved for you: {reminders_str}. Is there anything specific you'd like to know?"
+        else:
+            return "I don't have any reminders saved yet. You can ask me to remember something, and I'll keep it for you!"
+    
+    def _generate_conversational_response(self, name: str, context: Dict[str, Any]) -> str:
+        """Generate natural conversational response with personality"""
+        # Check if this is a returning conversation
+        if context['conversation_length'] > 3:
+            # More familiar responses
+            responses = [
+                f"Interesting! Tell me more, {name}! I'm all ears!",
+                f"Oh really? What else?",
+                f"That's fascinating! Keep going!",
+                f"I'm intrigued! What else?",
+                f"Tell me more! I'm enjoying this!",
+                f"You always have the most interesting things to say!",
+                f"I'm curious! What else?",
+                f"Well, this is getting good!"
+            ]
+        else:
+            # Newer conversation responses
+            responses = [
+                f"Interesting! Tell me more!",
+                f"Oh, I see! What else?",
+                f"That's cool! What else?",
+                f"Tell me more! I'm enjoying this!",
+                f"I'm curious! What else?",
+                f"Well, this is fun!",
+                f"Nice! What else?",
+                f"Let's keep chatting!"
+            ]
+        
+        return random.choice(responses)
