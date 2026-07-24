@@ -1,17 +1,8 @@
 #!/bin/bash
 
 # Purple AI - Run Script (Single Instance)
-# Ensures only one instance runs at a time
 
 set -e
-
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-NC='\033[0m'
 
 # Project directory
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -23,18 +14,15 @@ PID_FILE="/tmp/purple_ai.pid"
 
 # Kill any existing purple ai processes
 kill_existing() {
-    # Kill by PID file
     if [ -f "$PID_FILE" ]; then
         OLD_PID=$(cat "$PID_FILE")
         if kill -0 "$OLD_PID" 2>/dev/null; then
-            echo -e "${YELLOW}Stopping existing Purple AI (PID: $OLD_PID)...${NC}"
+            echo "Stopping existing Purple AI (PID: $OLD_PID)..."
             kill "$OLD_PID" 2>/dev/null || true
             sleep 1
         fi
         rm -f "$PID_FILE"
     fi
-    
-    # Also kill any python processes running main.py
     pkill -f "python.*main.py" 2>/dev/null || true
     rm -f "$LOCK_FILE"
 }
@@ -44,8 +32,8 @@ check_single_instance() {
     if [ -f "$PID_FILE" ]; then
         OLD_PID=$(cat "$PID_FILE")
         if kill -0 "$OLD_PID" 2>/dev/null; then
-            echo -e "${YELLOW}Purple AI is already running (PID: $OLD_PID)${NC}"
-            echo -e "${BLUE}Use './run.sh stop' to stop it first${NC}"
+            echo "Purple AI is already running (PID: $OLD_PID)"
+            echo "Use './run.sh stop' to stop it first"
             exit 1
         else
             rm -f "$LOCK_FILE" "$PID_FILE"
@@ -68,7 +56,7 @@ remove_lock() {
 # Stop running instance
 stop_instance() {
     kill_existing
-    echo -e "${GREEN}Purple AI stopped!${NC}"
+    echo "Purple AI stopped!"
 }
 
 # Check Python
@@ -78,7 +66,7 @@ check_python() {
     elif command -v python &>/dev/null; then
         PYTHON="python"
     else
-        echo -e "${RED}Error: Python not found${NC}"
+        echo "Error: Python not found"
         exit 1
     fi
 }
@@ -86,14 +74,14 @@ check_python() {
 # Setup virtual environment
 setup_venv() {
     if [ ! -d "$VENV_DIR" ]; then
-        echo -e "${YELLOW}Creating virtual environment...${NC}"
+        echo "Creating virtual environment..."
         $PYTHON -m venv "$VENV_DIR"
         source "$VENV_DIR/bin/activate"
         pip install --upgrade pip -q
         if [ -f "$REQ_FILE" ]; then
             pip install -r "$REQ_FILE" -q
         fi
-        echo -e "${GREEN}Virtual environment created!${NC}"
+        echo "Virtual environment created!"
     fi
 }
 
@@ -104,14 +92,14 @@ activate_venv() {
 
 # Clean function
 clean() {
-    echo -e "${YELLOW}Cleaning...${NC}"
+    echo "Cleaning..."
     kill_existing
     rm -f "$PROJECT_DIR"/*.pyc
     rm -rf "$PROJECT_DIR"/__pycache__
     rm -rf "$PROJECT_DIR"/utils/__pycache__
     rm -rf "$PROJECT_DIR"/core/__pycache__
     rm -rf "$PROJECT_DIR"/voice/__pycache__
-    echo -e "${GREEN}Cleaned!${NC}"
+    echo "Cleaned!"
 }
 
 # Diagnostics function
@@ -119,7 +107,7 @@ diagnose() {
     check_python
     setup_venv
     activate_venv
-    echo -e "${BLUE}Running diagnostics...${NC}"
+    echo "Running diagnostics..."
     cd "$PROJECT_DIR"
     $PYTHON -c "
 import sys
@@ -155,7 +143,7 @@ main() {
             exit 0
             ;;
         --help|-h)
-            echo -e "${PURPLE}Purple AI - Run Script (Single Instance)${NC}"
+            echo "Purple AI - Run Script (Single Instance)"
             echo ""
             echo "Usage: ./run.sh [option]"
             echo ""

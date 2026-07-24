@@ -8,7 +8,6 @@ import os
 import logging
 import time
 import signal
-import fcntl
 from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -20,52 +19,8 @@ from voice.tts_engine import TTSEngine
 from voice.voice_controller import VoiceController
 from utils.self_repair import self_repair
 
-# Lock file to prevent multiple instances
-LOCK_FILE = "/tmp/purple_ai.lock"
-PID_FILE = "/tmp/purple_ai.pid"
-
-def check_single_instance():
-    """Check if another instance is already running"""
-    try:
-        # Check PID file first
-        if os.path.exists(PID_FILE):
-            with open(PID_FILE, 'r') as f:
-                old_pid = int(f.read().strip())
-            try:
-                os.kill(old_pid, 0)  # Check if process exists
-                print("\n❌ Error: Purple AI is already running!")
-                print(f"   PID: {old_pid}")
-                print("   Use './run.sh stop' to stop it first.")
-                sys.exit(1)
-            except OSError:
-                # Process doesn't exist, remove stale files
-                os.remove(PID_FILE)
-                if os.path.exists(LOCK_FILE):
-                    os.remove(LOCK_FILE)
-        
-        # Create lock file
-        lock_fd = open(LOCK_FILE, 'w')
-        fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        
-        # Write PID
-        with open(PID_FILE, 'w') as f:
-            f.write(str(os.getpid()))
-        
-        return lock_fd
-    except IOError:
-        print("\n❌ Error: Purple AI is already running!")
-        print("   Use './run.sh stop' to stop it first.")
-        sys.exit(1)
-
 def cleanup(signum=None, frame=None):
     """Cleanup on exit"""
-    try:
-        if os.path.exists(LOCK_FILE):
-            os.remove(LOCK_FILE)
-        if os.path.exists(PID_FILE):
-            os.remove(PID_FILE)
-    except:
-        pass
     sys.exit(0)
 
 def print_welcome_banner():
@@ -115,9 +70,6 @@ def main():
     # Register signal handlers for cleanup
     signal.signal(signal.SIGINT, cleanup)
     signal.signal(signal.SIGTERM, cleanup)
-    
-    # Check for single instance
-    lock_fd = check_single_instance()
     
     try:
         # Run self-diagnostics and auto-fix
@@ -225,8 +177,6 @@ def main():
         logger.error(f"Fatal error: {e}")
         print(f"\n❌ Error: {e}")
         sys.exit(1)
-    finally:
-        cleanup()
 
 if __name__ == "__main__":
     main()
