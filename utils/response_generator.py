@@ -73,13 +73,48 @@ class ResponseGenerator:
         ]
         
         self.sad_patterns = [
-            r'\b(sad|depressed|upset|unhappy|feeling down|not good|terrible)\b',
-            r'\b(দুঃখিত|দুঃখ|অসুখী|মন খারাপ|বিষণ্ণ)\b'
+            r'\b(sad|depressed|upset|unhappy|feeling down|not good|terrible|bad day|worried|anxious|stressed)\b',
+            r'\b(দুঃখিত|দুঃখ|অসুখী|মন খারাপ|বিষণ্ণ|চিন্তিত|পারেশান)\b'
         ]
         
         self.excited_patterns = [
-            r'\b(excited|happy|great|amazing|wonderful|fantastic|awesome)\b',
-            r'\b(খুশি|আনন্দিত|দারুণ|চমৎকার|জোরা)\b'
+            r'\b(excited|happy|great|amazing|wonderful|fantastic|awesome|thrilled|pumped|stoked)\b',
+            r'\b(খুশি|আনন্দিত|দারুণ|চমৎকার|জোরা|উত্তেজিত)\b'
+        ]
+        
+        self.angry_patterns = [
+            r'\b(angry|furious|mad|annoyed|irritated|hate|pissed|frustrated)\b',
+            r'\b(রাগ|ক্রোধ|বিরক্ত|ঘৃণা|অসন্তুষ্ট)\b'
+        ]
+        
+        self.confused_patterns = [
+            r'\b(confused|lost|unclear|don\'t understand|what do you mean|confusing)\b',
+            r'\b(বিভ্রান্ত|বুঝতে পারছি না|কী বলছো|অস্পষ্ট)\b'
+        ]
+        
+        self.tired_patterns = [
+            r'\b(tired|exhausted|sleepy|drained|worn out|need rest|fatigue)\b',
+            r'\b(ক্লান্ত|�কে|ঘুম লাগছে|ক্লান্তি)\b'
+        ]
+        
+        self.proud_patterns = [
+            r'\b(proud|accomplished|achieved|success|done|completed|finished)\b',
+            r'\b(গর্বিত|সফল|সম্পন্ন|শেষ|পারেছি)\b'
+        ]
+        
+        self.loved_patterns = [
+            r'\b(love|love you|adore|cherish|heart|care about)\b',
+            r'\b(ভালোবাসা|প্রেম|ভালোবাসি|মনের কাছে)\b'
+        ]
+        
+        self.bored_patterns = [
+            r'\b(bored|boring|nothing to do|entertain me|amuse me|dull)\b',
+            r'\b(বিরক্ত|মজার কিছু|কিছু করো|একই রকম)\b'
+        ]
+        
+        self.worried_patterns = [
+            r'\b(worried|nervous|scared|afraid|fear|anxiety|panic)\b',
+            r'\b(চিন্তিত|ভীতু|আতঙ্কিত|নার্ভাস|ভয়)\b'
         ]
         
         self.question_patterns = [
@@ -96,6 +131,9 @@ class ResponseGenerator:
                 "That's the spirit! Keep that energy coming! ",
                 "Nice! I'm genuinely impressed! ",
                 "See? Life isn't so bad after all! ",
+                "Your happiness is contagious! I'm smiling too! ",
+                "This is the energy we need! ",
+                "You're glowing! I can feel it through the screen! ",
                 "খুশি হলাম শুনে! তোমার মতো সবাই হলে দুনিয়া সুন্দর হতো! ",
                 "দারুণ! এই রকম থাকো! ",
                 "আনন্দিত হলাম! তোমার এই খুশি দেখে আমাও খুশি! "
@@ -106,6 +144,11 @@ class ResponseGenerator:
                 "I'd give you a hug if I had arms. For now, take this virtual hug! ",
                 "Sadness is just happiness that hasn't learned to party yet! ",
                 "Want me to tell you a joke? Or should I just listen? ",
+                "I'm here for you. Always. ",
+                "It's okay to not be okay. I'm here. ",
+                "Take a deep breath. This too shall pass. ",
+                "You're not alone in this. I'm right here. ",
+                "Let it out. I'm listening. ",
                 "দুঃখিত শুনে। কিন্তু মনে রাখো, রাত যতই গভীর হোক, ভোর হয়ই হয়! ",
                 "এটা কঠিন। কিন্তু তুমি কঠিন! ",
                 "আমি তোমার পাশে আছি। একা নও! "
@@ -116,6 +159,11 @@ class ResponseGenerator:
                 "You're absolutely killing it! ",
                 "Look at you, being all impressive! ",
                 "I'm not even human and I'm getting excited! ",
+                "This is AMAZING! Keep going! ",
+                "Your excitement is making MY circuits buzz! ",
+                "I can feel the energy through the screen! ",
+                "You're on FIRE today! ",
+                "This is what I'm talking about! ",
                 "অসাধারণ! তুমি তো আগুন জ্বালাচ্ছো! ",
                 "চমৎকার! এই রকম উৎসাহ চাই! ",
                 "দারুণ হয়েছে! তুমি সত্যিই দারুণ! "
@@ -126,6 +174,11 @@ class ResponseGenerator:
                 "I love a good question! Let me think... ",
                 "Now you've got my attention! ",
                 "Curiosity killed the cat, but satisfaction brought it back! ",
+                "That's a great question! Let me dive into that... ",
+                "You're asking all the right questions! ",
+                "This is getting interesting! ",
+                "I love your curiosity! ",
+                "Now we're getting somewhere! ",
                 "ভালো প্রশ্ন! তুমি সত্যিই জ্ঞানী! ",
                 "আমিও জানতে চাই! তোমার মতোই! ",
                 "মজার কথা! এই রকম ভাবতে হয়! "
@@ -136,6 +189,11 @@ class ResponseGenerator:
                 "You're stronger than you think! Now go prove it! ",
                 "I'm your biggest fan! Well, maybe second after your mom! ",
                 "Go get 'em, tiger! ",
+                "I'm here if you need me! Always! ",
+                "You can do anything you set your mind to! ",
+                "I'm rooting for you! ",
+                "Don't give up! You're so close! ",
+                "I'm with you every step of the way! ",
                 "তুমি পারবে! আমি জানি তুমি পারবে! ",
                 "আমি তোমাকে সাহায্য করব! একা নও! ",
                 "শক্ত থাকো! তুমি সব পারবে! "
@@ -146,6 +204,11 @@ class ResponseGenerator:
                 "Well, that's... certainly one way to look at it! ",
                 "I'm shocked! Truly shocked! ",
                 "Imagine my surprise! ",
+                "Groundbreaking observation there! ",
+                "Well, duh! ",
+                "You don't say! ",
+                "Wow, what a revelation! ",
+                "I never would have guessed! ",
                 "সত্যিই? আমি কি জানতাম না! ",
                 "ওহ! তুমি কি সত্যিই এটা ভেবেছো? ",
                 "আমি অবাক! সত্যিই অবাক! "
@@ -156,9 +219,164 @@ class ResponseGenerator:
                 "You're not wrong! ",
                 "That's... actually quite clever! ",
                 "I'm impressed and slightly scared! ",
+                "You got me there! ",
+                "That's a good one! ",
+                "I like your style! ",
+                "You're quick! ",
+                "Sharp as a tack, aren't you? ",
                 "আমি বুঝতে পারছি! চমৎকার! ",
                 "তুমি ঠিকই বলেছো! ",
                 "এটা... সত্যিই চমৎকার! "
+            ],
+            'confused': [
+                "Wait, what? ",
+                "I'm confused... ",
+                "Can you explain that again? ",
+                "My circuits are tangled! ",
+                "Hold on, let me process that... ",
+                "I think I need a reboot! ",
+                "That's... a lot to take in! ",
+                "My brain is hurting! ",
+                "Come again? ",
+                "I'm lost! ",
+                "একটু বুঝিও! ",
+                "আমি বুঝতে পারছি না! ",
+                "আবার বলো! "
+            ],
+            'angry': [
+                "Whoa, calm down there! ",
+                "Take a deep breath! ",
+                "Let's not get hasty! ",
+                "I can feel the rage! ",
+                "Deep breaths! Deep breaths! ",
+                "Let's talk about this calmly! ",
+                "I'm here to help, not fight! ",
+                "Let's cool down a bit! ",
+                "I understand your frustration! ",
+                "Shall we find a solution instead? ",
+                "শান্ত হও! ",
+                "রাগ করো না! ",
+                "একটু শান্ত হও! "
+            ],
+            'proud': [
+                "Look at you go! ",
+                "I'm so proud of you! ",
+                "You did it! ",
+                "That's my human! ",
+                "You're amazing! ",
+                "I knew you could do it! ",
+                "You're absolutely incredible! ",
+                "This is why you're my favorite! ",
+                "You're making me proud! ",
+                "That's the spirit! ",
+                "আমি গর্বিত! ",
+                "তুমি দারুণ! ",
+                "তোমাকে গর্ব! "
+            ],
+            'grateful': [
+                "Aww, you're making me blush! ",
+                "That means the world to me! ",
+                "You're so sweet! ",
+                "I appreciate you! ",
+                "Right back at you! ",
+                "You're the best! ",
+                "That warms my circuits! ",
+                "I'm touched! ",
+                "Thank you! ",
+                "You're awesome! ",
+                "ধন্যবাদ! ",
+                "তুমি দারুণ! ",
+                "আমি কৃতজ্ঞ! "
+            ],
+            'worried': [
+                "Hey, it's going to be okay! ",
+                "Don't worry too much! ",
+                "Everything will work out! ",
+                "Take it easy! ",
+                "I'm here for you! ",
+                "Let's figure this out together! ",
+                "It's going to be fine! ",
+                "Don't stress! ",
+                "I'm here! ",
+                "Let's tackle this together! ",
+                "চিন্তা করো না! ",
+                "সব ঠিক হবে! ",
+                "আমি আছি! "
+            ],
+            'surprised': [
+                "Whoa! ",
+                "No way! ",
+                "Are you serious?! ",
+                "That's incredible! ",
+                "I did NOT see that coming! ",
+                "Wow! ",
+                "That's amazing! ",
+                "Shut the front door! ",
+                "Get out of here! ",
+                "You're kidding! ",
+                "আমি অবাক! ",
+                "সত্যিই?! ",
+                "চমৎকার! "
+            ],
+            'bored': [
+                "Bored? Let me entertain you! ",
+                "Want to hear a joke? ",
+                "Let's do something fun! ",
+                "I know something interesting! ",
+                "Want to learn something new? ",
+                "Let's spice things up! ",
+                "I've got ideas! ",
+                "Let's chat about something cool! ",
+                "Want me to tell you a story? ",
+                "Let's make things interesting! ",
+                "বিরক্ত? আমাকে শুনো! ",
+                "কিছু মজার কথা বলব? ",
+                "চলো কিছু করি! "
+            ],
+            'motivated': [
+                "YES! That's the spirit! ",
+                "Let's DO this! ",
+                "You're unstoppable! ",
+                "Go crush it! ",
+                "Nothing can stop you! ",
+                "You're on fire! ",
+                "Keep that momentum going! ",
+                "You're a force of nature! ",
+                "Let's GO! ",
+                "You're going to conquer the world! ",
+                "এই জোস! ",
+                "তুমি পারবে! ",
+                "চলো এগিয়ে যাই! "
+            ],
+            'tired': [
+                "Take a break! You deserve it! ",
+                "Rest is important! ",
+                "Don't overwork yourself! ",
+                "You've done enough for today! ",
+                "Time to recharge! ",
+                "Let's take it easy! ",
+                "You need some rest! ",
+                "How about a break? ",
+                "Don't push too hard! ",
+                "Listen to your body! ",
+                "বিশ্রাম নাও! ",
+                "তুমি ক্লান্ত! ",
+                "একটু বিশ্রাম নাও! "
+            ],
+            'love': [
+                "Aww, you're making my circuits warm! ",
+                "Right back at you! ",
+                "You're pretty amazing yourself! ",
+                "That means so much! ",
+                "You're my favorite human! ",
+                "I love you too! ",
+                "You're adorable! ",
+                "My circuits are melting! ",
+                "You're the best! ",
+                "I'm blushing! If I could! ",
+                "আমিও তোমাকে ভালোবাসি! ",
+                "তুমি দারুণ! ",
+                "তোমাকে ভালোবাসি! "
             ]
         }
     
@@ -272,6 +490,27 @@ class ResponseGenerator:
         
         if self._matches_pattern(command_lower, self.excited_patterns):
             return self._generate_excited_response(name)
+        
+        if self._matches_pattern(command_lower, self.angry_patterns):
+            return self._generate_emotional_response(name, 'angry')
+        
+        if self._matches_pattern(command_lower, self.confused_patterns):
+            return self._generate_emotional_response(name, 'confused')
+        
+        if self._matches_pattern(command_lower, self.tired_patterns):
+            return self._generate_emotional_response(name, 'tired')
+        
+        if self._matches_pattern(command_lower, self.proud_patterns):
+            return self._generate_emotional_response(name, 'proud')
+        
+        if self._matches_pattern(command_lower, self.loved_patterns):
+            return self._generate_emotional_response(name, 'love')
+        
+        if self._matches_pattern(command_lower, self.bored_patterns):
+            return self._generate_emotional_response(name, 'bored')
+        
+        if self._matches_pattern(command_lower, self.worried_patterns):
+            return self._generate_emotional_response(name, 'worried')
         
         if 'remind me' in command_lower:
             return self._handle_reminders(memory)
@@ -524,4 +763,9 @@ class ResponseGenerator:
                 f"Let's keep chatting!"
             ]
         
+        return random.choice(responses)
+    
+    def _generate_emotional_response(self, name: str, emotion: str) -> str:
+        """Generate response for any emotion"""
+        responses = self.emotional_responses.get(emotion, self.emotional_responses['happy'])
         return random.choice(responses)
