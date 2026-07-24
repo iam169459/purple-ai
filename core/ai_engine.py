@@ -324,21 +324,87 @@ class OfflineAI:
         
         return True
     
-    def _speak_text(self, text, fast=False):
-        """Speak text with optional fast mode for quick responses"""
+    def _speak_text(self, text, fast=False, emotion=None):
+        """Speak text with emotion detection and voice variations"""
         if hasattr(self, 'tts_engine') and self.tts_engine:
             if self.tts_engine.is_available():
                 try:
+                    # Auto-detect emotion if not provided
+                    if emotion is None:
+                        emotion = self._detect_emotion(text)
+                    
                     if fast:
                         self.tts_engine.speak_fast(text)
                     else:
-                        self.tts_engine.speak(text, async_mode=True)
+                        self.tts_engine.speak_with_emotion(text, emotion)
                 except Exception as e:
                     logger.error(f"TTS error: {e}")
             else:
                 logger.info(f"AI: {text}")
         else:
             logger.info(f"AI: {text}")
+    
+    def _detect_emotion(self, text):
+        """Detect emotion from text for voice variation"""
+        text_lower = text.lower()
+        
+        # Excited/Happy
+        if any(x in text_lower for x in ['whoa', 'amazing', 'awesome', 'great job', 'excellent', 'fantastic', 'incredible', 'love it']):
+            return 'excited'
+        if any(x in text_lower for x in ['hey', 'hi', 'hello', 'nice', 'cool', 'good']):
+            return 'happy'
+        
+        # Sad
+        if any(x in text_lower for x in ['sad', 'sorry', 'unfortunately', 'bad news', 'miss you', 'tough day']):
+            return 'sad'
+        if any(x in text_lower for x in ['aww', 'poor', 'hug']):
+            return 'sad'
+        
+        # Angry
+        if any(x in text_lower for x in ['ugh', 'hate', 'annoying', 'frustrat', 'ridiculous']):
+            return 'angry'
+        
+        # Worried
+        if any(x in text_lower for x in ['careful', 'worried', 'caution', 'danger', 'be careful', 'watch out']):
+            return 'worried'
+        
+        # Confused
+        if any(x in text_lower for x in ['hmm', 'wait', 'confused', 'unclear', 'not sure']):
+            return 'confused'
+        
+        # Tired
+        if any(x in text_lower for x in ['tired', 'exhaust', 'yawn', 'sleepy', 'rest']):
+            return 'tired'
+        
+        # Proud
+        if any(x in text_lower for x in ['proud', 'congrat', 'well done', 'achieved', 'accomplished', 'success']):
+            return 'proud'
+        
+        # Love
+        if any(x in text_lower for x in ['love', 'sweet', 'cute', 'adorable', 'heart']):
+            return 'love'
+        
+        # Sarcastic
+        if any(x in text_lower for x in ['oh really', 'imagine', 'shocking', 'groundbreaking', 'wow']):
+            return 'sarcastic'
+        
+        # Bored
+        if any(x in text_lower for x in ['boring', 'meh', 'same', 'yawn']):
+            return 'bored'
+        
+        # Surprised
+        if any(x in text_lower for x in ['wow', 'no way', 'omg', 'shut', 'incredible', 'unbelievable']):
+            return 'surprised'
+        
+        # Grateful
+        if any(x in text_lower for x in ['thank', 'grateful', 'appreciate', 'means a lot']):
+            return 'grateful'
+        
+        # Motivated
+        if any(x in text_lower for x in ['let\'s go', 'come on', 'you can', 'believe', 'crush']):
+            return 'motivated'
+        
+        return 'neutral'
     
     def _speak_immediate(self, text):
         """Speak immediately without waiting (for quick acknowledgments)"""
