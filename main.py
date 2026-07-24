@@ -117,7 +117,6 @@ def main():
         else:
             logger.info("Setup already complete. Loading owner profile...")
             owner_name = ai_engine.memory.get('user_name', 'friend')
-            print(f"\n👋 Welcome back, {owner_name}!")
         
         logger.info("Initializing voice controller...")
         voice_controller = VoiceController(tts_engine)
