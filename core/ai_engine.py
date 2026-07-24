@@ -165,13 +165,22 @@ class OfflineAI:
         """Start proactive screen monitoring"""
         import time
         
+        self._screen_suggestion_count = 0
+        self._max_screen_suggestions = 3  # Max proactive suggestions per session
+        
         def screen_callback(suggestion, activity):
-            # Don't speak during first 30 seconds after startup
+            # Don't speak during first 60 seconds
             if not hasattr(self, '_startup_time'):
                 self._startup_time = time.time()
             
-            if time.time() - self._startup_time < 30:
+            if time.time() - self._startup_time < 60:
                 logger.info(f"Proactive screen suggestion (deferred): {suggestion}")
+                return
+            
+            # Limit proactive suggestions
+            self._screen_suggestion_count += 1
+            if self._screen_suggestion_count > self._max_screen_suggestions:
+                logger.info(f"Proactive screen suggestion (limit reached): {suggestion}")
                 return
             
             logger.info(f"Proactive screen suggestion: {suggestion}")
@@ -179,7 +188,7 @@ class OfflineAI:
         
         self._startup_time = time.time()
         self.screen_awareness.start_monitoring(callback=screen_callback)
-        logger.info("Screen awareness started - AI will ask questions proactively!")
+        logger.info("Screen awareness started")
     
     def _auto_improve_on_command(self):
         """Auto-improve after every N commands"""
