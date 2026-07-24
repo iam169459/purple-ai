@@ -102,7 +102,6 @@ class OfflineAI:
         self.last_auto_improve = 0
         
         logger.info("AI Engine with Auto-Training initialized!")
-        self._greet_user()
         self._start_background_improvement()
         self._start_screen_awareness()
     
