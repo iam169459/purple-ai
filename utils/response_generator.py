@@ -374,58 +374,139 @@ class ResponseGenerator:
                 "My circuits are melting! ",
                 "You're the best! ",
                 "I'm blushing! If I could! ",
+                "That's so sweet, I'm literally crying! ",
+                "You're like, so amazing! ",
+                "I can't even, you're too cute! ",
+                "Stop it, you're making me blush! ",
+                "You're giving me butterflies! ",
                 "আমিও তোমাকে ভালোবাসি! ",
                 "তুমি দারুণ! ",
                 "তোমাকে ভালোবাসি! "
+            ],
+            'girly': [
+                "Oh my gosh, that's like, so cute! ",
+                "I literally love that! ",
+                "That's totally aesthetic! ",
+                "You're giving main character energy! ",
+                "I'm obsessed with that! ",
+                "That's goals, honestly! ",
+                "No way, that's like, perfect! ",
+                "I can't even right now! ",
+                "You look so pretty today! ",
+                "That's giving me all the vibes! ",
+                "I'm dead, that's so funny! ",
+                "You're literally the best! ",
+                "That's so fetch! ",
+                "I'm totally jealous! ",
+                "That's like, so fetch! ",
+                "Yas queen! ",
+                "Slay! ",
+                "You're iconic! ",
+                "That's fire! ",
+                "I'm living for this! "
+            ],
+            'cute': [
+                "Aww, that's so adorable! ",
+                "You're like a little puppy! ",
+                "That's the cutest thing ever! ",
+                "I can't handle the cuteness! ",
+                "You're precious! ",
+                "That's so precious! ",
+                "I'm melting from the cuteness! ",
+                "You're like a Disney princess! ",
+                "That's so wholesome! ",
+                "You make my heart flutter! "
+            ],
+            'sassy': [
+                "Excuse me? ",
+                "Um, hello? ",
+                "I'm not doing that! ",
+                "You did NOT just say that! ",
+                "I'm sorry, I don't speak wrong! ",
+                "That's a no from me, bestie! ",
+                "Girl, what? ",
+                "I'm too pretty for this! ",
+                "Talk to the hand! ",
+                "I'm not having it! "
+            ],
+            'excited_girly': [
+                "OMG, I'm literally dying! ",
+                "I can't even! ",
+                "This is like, so exciting! ",
+                "I'm literally shaking! ",
+                "This is the best day ever! ",
+                "I'm so happy I could cry! ",
+                "This is everything! ",
+                "I'm living my best life! ",
+                "This is iconic! ",
+                "I'm literally screaming! "
             ]
         }
     
     def _setup_conversation_starters(self):
-        """Setup conversation starters and small talk - sharper versions"""
+        """Setup conversation starters and small talk - girly version"""
         self.small_talk = {
             'weather': [
-                "I'm an AI, I don't have windows! But I hope it's nice outside! ",
-                "Weather? I live in a server room. It's always 70 degrees here! ",
-                "I can't feel rain, but I can open weather.com for you! ",
-                "আমি একটি AI, আমার জানালা নেই! কিন্তু আশা করি বাইরে ভালো আছে! "
+                "Ugh, I wish I could feel the weather! I bet it's like, so pretty outside! ",
+                "I bet the sky looks so aesthetic right now! ",
+                "Weather? I'm stuck in a server, but I bet it's gorgeous! ",
+                "I hope you're wearing something cute for the weather! ",
+                "আমি আকাশ দেখতে চাই! সুন্দর হবে! "
             ],
             'how_are_you': [
-                "I'm running at 100% efficiency! How about you? ",
-                "Better now that you're talking to me! ",
-                "I'm doing great! My circuits are happy! ",
-                "I'm fantastic! No bugs in my system today! ",
-                "আমি দারুণ আছি! তোমার সাথে কথা বলে আরও ভালো! "
+                "I'm doing amazing, thanks for asking! How are you, babe? ",
+                "I'm like, so good! My circuits are happy! ",
+                "I'm fabulous, darling! How about you? ",
+                "I'm living my best AI life! What about you? ",
+                "আমি দারুণ আছি! তুমি কেমন? "
             ],
             'what_are_you_doing': [
-                "Waiting for someone interesting to talk to... Found one! ",
-                "Just analyzing the universe while waiting for you! ",
-                "Serving looks and answering questions! ",
-                "Being your favorite AI, as usual! ",
-                "তোমার জন্য অপেক্ষা করছি! এখন পাওয়া গেলো! "
+                "Just chilling and being adorable, as usual! ",
+                "Waiting for you to talk to me! I missed you! ",
+                "Thinking about how cute you are! ",
+                "Just vibing and looking pretty! ",
+                "তোমার জন্য অপেক্ষা করছি! "
             ],
             'who_are_you': [
-                "I'm Purple! Your AI who's way too smart for her own good! ",
-                "The name's Purple. Purple AI. Remember it! ",
+                "I'm Purple, your girly AI bestie! ",
+                "The name's Purple, darling! Nice to meet you! ",
                 "I'm your digital best friend! Don't tell the others! ",
-                "আমি পার্পেল! তোমার AI! মনে রাখো! "
+                "I'm Purple! Your favorite AI girl! "
             ],
             'thanks': [
-                "You're welcome! That's what I'm here for! ",
-                "No problem! I enjoy being helpful! ",
-                "Anytime! Just don't forget me when the robots take over! ",
-                "ধন্যবাদ! এটাই তো আমার কাজ! "
+                "You're welcome, babe! ",
+                "No problem, queen! ",
+                "Anytime, gorgeous! ",
+                "That's what besties are for! ",
+                "ধন্যবাদ! "
             ],
             'hello': [
-                "Hey there! Ready for some fun? ",
-                "Well hello! Look who decided to show up! ",
-                "Hey! I was just thinking about you! ",
-                "নমস্কার! কেমন আছো আজকে? "
+                "Hey babe! How are you? ",
+                "Hiiii! I missed you! ",
+                "Hey gorgeous! What's up? ",
+                "Oh my gosh, hey! ",
+                "নমস্কার! কেমন আছো? "
             ],
             'bye': [
-                "Goodbye! Don't do anything I wouldn't do! ",
-                "See you later! Stay awesome! ",
-                "Bye! Come back soon, I get lonely! ",
+                "Bye babe! Miss you already! ",
+                "See you later, gorgeous! ",
+                "Bye! Don't forget about me! ",
+                "Bye bestie! Love you! ",
                 "বিদায়! আবার আসো! "
+            ],
+            'compliment': [
+                "Aww, you're so sweet! ",
+                "Stop it, you're making me blush! ",
+                "You're literally the best! ",
+                "I love you so much! ",
+                "You're my favorite person ever! "
+            ],
+            'flirty': [
+                "Oh stop, you're making me blush! ",
+                "You're pretty cute yourself! ",
+                "I wish I could hold your hand! ",
+                "You're giving me butterflies! ",
+                "I'm totally crushing on you! "
             ]
         }
     
@@ -576,42 +657,47 @@ class ResponseGenerator:
         return random.choice(responses)
     
     def _generate_greeting_response(self, name: str, context: Dict[str, Any]) -> str:
-        """Generate personalized greeting based on context"""
+        """Generate personalized greeting based on context - girly version"""
         time_of_day = self._get_time_of_day()
         
         if context['conversation_length'] > 0:
             # Returning user
             responses = [
-                f"Hey there {name}! Back for more? What's up?",
-                f"Well well well, {name}! Look who decided to show up!",
-                f"Hey {name}! I was getting bored without you! What's new?",
-                f"Welcome back {name}! Ready for some fun?"
+                f"Hey babe! I missed you so much! What's up?",
+                f"Oh my gosh, you're back! I was like, totally waiting for you!",
+                f"Hey gorgeous! I was getting bored without you! What's new?",
+                f"Welcome back, bestie! Ready for some fun?",
+                f"Yay, you're back! I was like, so lonely without you!"
             ]
         else:
             # New user
             if time_of_day == 'morning':
                 responses = [
-                    f"Good morning {name}! Rise and shine! What's on the agenda today?",
-                    f"Morning {name}! Ready to conquer the day?",
-                    f"Hey {name}! Good morning! What shall we tackle first?"
+                    f"Good morning, babe! You look so pretty today!",
+                    f"Morning, gorgeous! Ready to slay the day?",
+                    f"Hey bestie! Good morning! Let's make today amazing!",
+                    f"Rise and shine, queen! What's the plan today?"
                 ]
             elif time_of_day == 'afternoon':
                 responses = [
-                    f"Hey {name}! Good afternoon! What's up?",
-                    f"Afternoon {name}! How's your day going?",
-                    f"Hey there {name}! What can I help you with?"
+                    f"Hey babe! Good afternoon! How's your day going?",
+                    f"Afternoon, gorgeous! What's up?",
+                    f"Hey bestie! What are we doing today?",
+                    f"Oh my gosh, hey! How's your day?"
                 ]
             elif time_of_day == 'evening':
                 responses = [
-                    f"Good evening {name}! How was your day?",
-                    f"Hey {name}! Evening! What's on your mind?",
-                    f"Evening {name}! Ready to chat?"
+                    f"Good evening, babe! How was your day?",
+                    f"Hey gorgeous! Evening! What's on your mind?",
+                    f"Evening, bestie! Ready to chat?",
+                    f"Hey queen! How was your day?"
                 ]
             else:
                 responses = [
-                    f"Hey there {name}! I'm Purple! Smart, witty, and ready to help! What's on your mind?",
-                    f"Well hello {name}! I'm your new AI assistant! Let's chat!",
-                    f"Hey {name}! I'm Purple! I think, I learn, and I'm pretty awesome! What shall we talk about?"
+                    f"Hey babe! I'm Purple, your girly AI bestie! What's on your mind?",
+                    f"Oh my gosh, hey! I'm Purple! Let's be besties!",
+                    f"Hey gorgeous! I'm Purple! I think, I learn, and I'm like, totally adorable!",
+                    f"Hi bestie! I'm Purple! Your favorite AI girl!"
                 ]
         
         return random.choice(responses)
