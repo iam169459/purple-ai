@@ -164,11 +164,21 @@ class OfflineAI:
     
     def _start_screen_awareness(self):
         """Start proactive screen monitoring"""
+        import time
+        
         def screen_callback(suggestion, activity):
+            # Don't speak during first 30 seconds after startup
+            if not hasattr(self, '_startup_time'):
+                self._startup_time = time.time()
+            
+            if time.time() - self._startup_time < 30:
+                logger.info(f"Proactive screen suggestion (deferred): {suggestion}")
+                return
+            
             logger.info(f"Proactive screen suggestion: {suggestion}")
-            # Actually speak to the user proactively
             self._speak_text(suggestion)
         
+        self._startup_time = time.time()
         self.screen_awareness.start_monitoring(callback=screen_callback)
         logger.info("Screen awareness started - AI will ask questions proactively!")
     

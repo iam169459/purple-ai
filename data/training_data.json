@@ -734,6 +734,24 @@
       ],
       "sentiment": "neutral",
       "response_quality": null
+    },
+    {
+      "user_input": "sorry i don't recognise your voice",
+      "ai_response": "Tell me more! I'm enjoying this!",
+      "timestamp": "2026-07-24T17:40:42.520555",
+      "context": {
+        "current_topic": null,
+        "recent_topics": [],
+        "conversation_flow": [],
+        "pending_question": "What made you think of that?",
+        "awaiting_answer": true,
+        "last_interaction_quality": null
+      },
+      "topics": [
+        "general"
+      ],
+      "sentiment": "neutral",
+      "response_quality": null
     }
   ],
   "patterns": {
@@ -1113,6 +1131,36 @@
         "Well, this is fun!"
       ],
       "count": 1
+    },
+    "your": {
+      "responses": [
+        "Tell me more! I'm enjoying this!"
+      ],
+      "count": 1
+    },
+    "recognise": {
+      "responses": [
+        "Tell me more! I'm enjoying this!"
+      ],
+      "count": 1
+    },
+    "don't": {
+      "responses": [
+        "Tell me more! I'm enjoying this!"
+      ],
+      "count": 1
+    },
+    "voice": {
+      "responses": [
+        "Tell me more! I'm enjoying this!"
+      ],
+      "count": 1
+    },
+    "sorry": {
+      "responses": [
+        "Tell me more! I'm enjoying this!"
+      ],
+      "count": 1
     }
   },
   "responses": {},
@@ -1252,6 +1300,11 @@
           "input": "Q: Have you considered how 'general' connects to other things?",
           "response": "A: exit",
           "timestamp": "2026-07-23T23:50:04.005759"
+        },
+        {
+          "input": "sorry i don't recognise your voice",
+          "response": "Tell me more! I'm enjoying this!",
+          "timestamp": "2026-07-24T17:40:42.520601"
         }
       ],
       "learned_facts": [],
@@ -1291,5 +1344,5 @@
     }
   },
   "conversation_flows": [],
-  "last_updated": "2026-07-24T00:36:09.546853"
+  "last_updated": "2026-07-24T17:41:37.538958"
 }
