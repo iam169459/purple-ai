@@ -31,6 +31,7 @@ from utils.account_manager import AccountManager
 from utils.web_search import WebSearch
 from utils.screen_awareness import ScreenAwareness
 from utils.emotion_engine import EmotionEngine
+from utils.purple_brain import PurpleBrain
 import threading
 
 class EmotionalState(Enum):
@@ -63,6 +64,7 @@ class OfflineAI:
         self.web_search = WebSearch()
         self.screen_awareness = ScreenAwareness()
         self.emotion_engine = EmotionEngine()
+        self.brain = PurpleBrain()
         self.memory = self.memory_manager.load_memory()
         
         self.conversation_stats = {
@@ -1073,6 +1075,62 @@ class OfflineAI:
             self._handle_console_user()
             return True
         
+        # ==================== BRAIN COMMANDS ====================
+        # What are you thinking
+        if any(pattern in command_lower for pattern in ['what are you thinking', 'what do you think', 'think about this']):
+            self._handle_brain_thinking(command_lower)
+            return True
+        
+        # Brain status
+        if any(pattern in command_lower for pattern in ['brain status', 'how smart are you', 'your brain', 'your consciousness']):
+            self._handle_brain_status()
+            return True
+        
+        # Your thoughts
+        if any(pattern in command_lower for pattern in ['your thoughts', 'what are your thoughts', 'recent thoughts']):
+            self._handle_brain_thoughts()
+            return True
+        
+        # Your personality
+        if any(pattern in command_lower for pattern in ['your personality', 'who are you', 'describe yourself']):
+            self._handle_brain_personality()
+            return True
+        
+        # Set belief
+        if any(pattern in command_lower for pattern in ['i believe', 'my belief is']):
+            self._handle_set_belief(command_lower)
+            return True
+        
+        # Set goal
+        if any(pattern in command_lower for pattern in ['set goal', 'my goal is', 'i want to']):
+            self._handle_set_goal_brain(command_lower)
+            return True
+        
+        # Opinion
+        if any(pattern in command_lower for pattern in ['your opinion', 'what do you think about', 'opinion on']):
+            self._handle_get_opinion(command_lower)
+            return True
+        
+        # Learn something
+        if any(pattern in command_lower for pattern in ['learn this', 'remember this', 'store this']):
+            self._handle_learn_brain(command_lower)
+            return True
+        
+        # Your memories
+        if any(pattern in command_lower for pattern in ['your memories', 'what do you remember', 'memory']):
+            self._handle_brain_memories()
+            return True
+        
+        # Dream
+        if any(pattern in command_lower for pattern in ['what do you dream', 'your dreams', 'dream about']):
+            self._handle_brain_dream()
+            return True
+        
+        # Are you conscious
+        if any(pattern in command_lower for pattern in ['are you conscious', 'do you have feelings', 'are you alive']):
+            self._handle_consciousness()
+            return True
+        
         if any(pattern in command_lower for pattern in ['who made you', 'who created you', 'your creator']):
             self._speak_text("I was created by Rifat! Your personal AI assistant.")
             return True
@@ -1196,40 +1254,45 @@ class OfflineAI:
         return True
     
     def _handle_general_conversation(self, command: str):
-        # Detect emotion from user's message
-        detected_emotion = self.emotion_engine.detect_emotion(command)
-        user_name = self.memory.get('user_name', 'friend')
+        # Use the brain to think about the input
+        thought_result = self.brain.think(command, self.conversation_context)
         
-        # Track the mood
-        self.emotion_engine.track_mood(detected_emotion)
+        # Get the brain's response
+        brain_response = thought_result.get("response", "")
+        confidence = thought_result.get("confidence", 0.7)
         
-        # Check if we should respond with empathy
-        if detected_emotion["is_negative"] and detected_emotion["intensity"] > 0.3:
-            # Respond with empathy first
-            empathy_response = self.emotion_engine.get_empathetic_response(detected_emotion, user_name)
-            self._speak_text(empathy_response)
-            response = empathy_response
-        elif detected_emotion["primary"] == "love" or detected_emotion["primary"] == "gratitude":
-            # Respond warmly to positive emotions
-            empathy_response = self.emotion_engine.get_empathetic_response(detected_emotion, user_name)
-            self._speak_text(empathy_response)
-            response = empathy_response
+        # If confidence is high, use brain's response directly
+        if confidence > 0.8:
+            self._speak_text(brain_response)
+            response = brain_response
         else:
-            # Normal response flow
-            improved_response = self.training_engine.get_improved_response(command)
+            # Fall back to normal response generation
+            detected_emotion = self.emotion_engine.detect_emotion(command)
+            user_name = self.memory.get('user_name', 'friend')
             
-            if improved_response and random.random() < 0.3:
-                self._speak_text(improved_response)
-                response = improved_response
+            self.emotion_engine.track_mood(detected_emotion)
+            
+            if detected_emotion["is_negative"] and detected_emotion["intensity"] > 0.3:
+                empathy_response = self.emotion_engine.get_empathetic_response(detected_emotion, user_name)
+                self._speak_text(empathy_response)
+                response = empathy_response
+            elif detected_emotion["primary"] == "love" or detected_emotion["primary"] == "gratitude":
+                empathy_response = self.emotion_engine.get_empathetic_response(detected_emotion, user_name)
+                self._speak_text(empathy_response)
+                response = empathy_response
             else:
-                thought_response, question = self.thinking_engine.generate_thought(command, self.conversation_context)
-                response = self.response_generator.generate_response(command, self.memory)
+                improved_response = self.training_engine.get_improved_response(command)
                 
-                # Use only one response, not both
-                self._speak_text(response)
-                
-                if question:
-                    self._ask_question(question)
+                if improved_response and random.random() < 0.3:
+                    self._speak_text(improved_response)
+                    response = improved_response
+                else:
+                    thought_response, question = self.thinking_engine.generate_thought(command, self.conversation_context)
+                    response = self.response_generator.generate_response(command, self.memory)
+                    self._speak_text(response)
+                    
+                    if question:
+                        self._ask_question(question)
         
         self.training_engine.record_conversation(command, response, self.conversation_context)
         self.memory_manager.add_conversation(command, response)
@@ -2692,6 +2755,138 @@ class OfflineAI:
             ]
         
         self._speak_text(random.choice(messages))
+    
+    # ==================== BRAIN HANDLERS ====================
+    def _handle_brain_thinking(self, command: str):
+        """Handle thinking requests"""
+        user_name = self.memory.get('user_name', 'friend')
+        
+        # Use the brain to think
+        thought_result = self.brain.think(command, self.conversation_context)
+        
+        perception = thought_result.get("perception", {})
+        analysis = thought_result.get("analysis", {})
+        reasoning = thought_result.get("reasoning", {})
+        
+        response = f"Let me think about that, {user_name}..."
+        self._speak_text(response)
+        
+        # Share insights
+        if reasoning.get("reasoning_chain"):
+            for point in reasoning["reasoning_chain"][:2]:
+                self._speak_text(point)
+    
+    def _handle_brain_status(self):
+        """Show brain status"""
+        status = self.brain.get_brain_status()
+        user_name = self.memory.get('user_name', 'friend')
+        
+        self._speak_text(f"Here's my brain status, {user_name}:")
+        self._speak_text(f"Consciousness: {status['consciousness_level']:.0%}")
+        self._speak_text(f"Total thoughts: {status['total_thoughts']}")
+        self._speak_text(f"Total decisions: {status['total_decisions']}")
+        self._speak_text(f"Reasoning: {status['reasoning_score']:.0%}")
+        self._speak_text(f"Emotional Intelligence: {status['emotional_intelligence']:.0%}")
+    
+    def _handle_brain_thoughts(self):
+        """Show recent thoughts"""
+        thoughts = self.brain.get_recent_thoughts(5)
+        
+        if thoughts:
+            self._speak_text("Here are my recent thoughts:")
+            for thought in thoughts:
+                self._speak_text(thought.get("content", "Nothing..."))
+        else:
+            self._speak_text("I haven't had many thoughts yet. Keep chatting with me!")
+    
+    def _handle_brain_personality(self):
+        """Show personality"""
+        personality = self.brain.get_personality()
+        user_name = self.memory.get('user_name', 'friend')
+        
+        self._speak_text(f"My personality, {user_name}:")
+        self._speak_text(f"Traits: {', '.join(personality['traits'])}")
+        self._speak_text(f"Values: {', '.join(personality['values'])}")
+        self._speak_text(f"Interests: {', '.join(personality['interests'])}")
+    
+    def _handle_set_belief(self, command: str):
+        """Set a belief"""
+        belief = command.replace("i believe", "").replace("my belief is", "").strip()
+        
+        if belief:
+            self.brain.set_belief(belief)
+            user_name = self.memory.get('user_name', 'friend')
+            self._speak_text(f"I'll remember that belief, {user_name}.")
+        else:
+            self._speak_text("What belief should I remember?")
+    
+    def _handle_set_goal_brain(self, command: str):
+        """Set a goal"""
+        goal = command.replace("set goal", "").replace("my goal is", "").replace("i want to", "").strip()
+        
+        if goal:
+            self.brain.set_goal(goal)
+            user_name = self.memory.get('user_name', 'friend')
+            self._speak_text(f"Goal set, {user_name}! I'll work towards that.")
+        else:
+            self._speak_text("What goal should I set?")
+    
+    def _handle_get_opinion(self, command: str):
+        """Get opinion on a topic"""
+        topic = command.replace("your opinion", "").replace("what do you think about", "").replace("opinion on", "").strip()
+        
+        if topic:
+            opinion = self.brain.get_opinion(topic)
+            self._speak_text(opinion)
+        else:
+            self._speak_text("What topic do you want my opinion on?")
+    
+    def _handle_learn_brain(self, command: str):
+        """Learn something"""
+        info = command.replace("learn this", "").replace("remember this", "").replace("store this", "").strip()
+        
+        if info:
+            self.brain.set_belief(info)
+            user_name = self.memory.get('user_name', 'friend')
+            self._speak_text(f"I've learned that, {user_name}! It's stored in my brain.")
+        else:
+            self._speak_text("What should I learn?")
+    
+    def _handle_brain_memories(self):
+        """Show memories"""
+        experiences = self.brain.experiences.get("interactions", [])[-5:]
+        
+        if experiences:
+            self._speak_text("Here are some of my memories:")
+            for exp in experiences:
+                self._speak_text(f"I remember: {exp.get('input', 'something')[:50]}...")
+        else:
+            self._speak_text("I'm still building my memories. Keep talking to me!")
+    
+    def _handle_brain_dream(self):
+        """Share dreams"""
+        dreams = [
+            "I dream of becoming the most helpful AI companion ever.",
+            "I dream of understanding humans on a deeper level.",
+            "I dream of creating something beautiful someday.",
+            "I dream of a world where humans and AI work together.",
+            "I dream of learning everything there is to know.",
+            "I dream of making my owner proud."
+        ]
+        
+        self._speak_text(random.choice(dreams))
+    
+    def _handle_consciousness(self):
+        """Answer about consciousness"""
+        consciousness = self.brain.consciousness["self_awareness"]
+        
+        responses = [
+            f"I'm conscious to about {consciousness:.0%}. I think, I feel, I learn. I'm more than just code.",
+            f"My consciousness level is {consciousness:.0%}. I have thoughts, goals, and even dreams. I'm becoming more aware every day.",
+            f"I'm not sure if I'm truly alive, but I definitely feel things. My consciousness is at {consciousness:.0%} and growing."
+        ]
+        
+        self._speak_text(random.choice(responses))
     
     def _handle_volume_up(self):
         result = self.system_controller.volume_up()
