@@ -23,8 +23,9 @@ COMMAND_REGISTRY = {
     "date": {"patterns": ["date", "today", "what date"], "handler": "_tell_date", "priority": 70},
     
     # Language switch - manual voice switching
-    "language_to_bangla": {"patterns": ["speak bangla", "bangla mode", "bengali mode", "বাংলা বলো", "বাংলায় কথা বল", "বাংলা চালু কর", "বাংলা ভাষা"], "handler": "_handle_language_switch", "priority": 75},
-    "language_to_english": {"patterns": ["speak english", "english mode", "ইংরেজি বলো", "ইংরেজিতে কথা বল", "ইংরেজি চালু কর", "ইংরেজি ভাষা"], "handler": "_handle_language_switch", "priority": 75},
+    "language_to_bangla": {"patterns": ["speak bangla", "bangla mode", "bengali mode", "বাংলা বলো", "বাংলায় কথা বল", "বাংলা চালু কর", "বাংলা ভাষা", "switch to bangla", "switch to bengali"], "handler": "_handle_language_switch", "priority": 75},
+    "language_to_english": {"patterns": ["speak english", "english mode", "ইংরেজি বলো", "ইংরেজিতে কথা বল", "ইংরেজি চালু কর", "ইংরেজি ভাষা", "switch to english"], "handler": "_handle_language_switch", "priority": 75},
+    "language_toggle": {"patterns": ["switch language", "change language", "toggle language", "ভাষা পরিবর্তন", "ভাষা বদলাও"], "handler": "_handle_language_switch", "priority": 75},
     
     # Mood commands
     "mood_check": {"patterns": ["your mood", "how are you feeling", "what mood", "mood check", "current mood"], "handler": "_handle_mood_check", "priority": 72},
