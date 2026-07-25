@@ -16,7 +16,7 @@ from config import config
 from logger import logger
 from core.ai_engine import OfflineAI
 from voice.tts_engine import TTSEngine
-from voice.voice_controller import VoiceController
+from voice.voice_controller import OptimizedVoiceController as VoiceController
 from utils.self_repair import self_repair
 
 def cleanup(signum=None, frame=None):

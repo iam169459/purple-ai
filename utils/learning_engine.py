@@ -168,3 +168,23 @@ class LearningEngine:
             stats[category] = len(self.knowledge_base.get(category, {}))
         stats['total_learned'] = len(self.knowledge_base.get('learned', []))
         return stats
+
+    def calculate_similarity(self, text1: str, text2: str) -> float:
+        """Calculate similarity between two texts"""
+        if not text1 or not text2:
+            return 0.0
+        
+        # Simple word-based similarity
+        words1 = set(text1.lower().split())
+        words2 = set(text2.lower().split())
+        
+        if not words1 and not words2:
+            return 1.0
+        
+        intersection = words1.intersection(words2)
+        union = words1.union(words2)
+        
+        if not union:
+            return 0.0
+        
+        return len(intersection) / len(union)

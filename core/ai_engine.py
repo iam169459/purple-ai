@@ -30,13 +30,15 @@ from utils.internet_learning import InternetLearner
 from utils.account_manager import AccountManager
 from utils.web_search import WebSearch
 from utils.screen_awareness import ScreenAwareness
-from utils.emotion_engine import EmotionEngine
+from utils.emotion_engine import OptimizedEmotionEngine as EmotionEngine
 from utils.purple_brain import PurpleBrain
 from utils.advanced_ai import AdvancedAI
-from utils.mood_system import MoodShifter, Mood
+from utils.mood_system import OptimizedMoodShifter as MoodShifter, Mood
 from utils.camera_access import CameraAccess
 from utils.purple_database import PurpleDatabase
 from utils.media_controller import MediaController
+from utils.web_media import WebMediaEngine
+from utils.autonomous_engine import AutonomousEngine
 from core.command_registry import get_command_handler
 import threading
 
@@ -86,6 +88,8 @@ class OfflineAI:
         self.camera_access = CameraAccess()
         self.purple_db = PurpleDatabase()
         self.media_controller = MediaController()
+        self.web_media = WebMediaEngine()
+        self.autonomous_engine = AutonomousEngine()
         self.memory = self.memory_manager.load_memory()
         
         self.conversation_stats = {
@@ -3837,7 +3841,675 @@ class OfflineAI:
             self._speak_with_emotion(result['description'], 'interested')
         else:
             self._speak_text(result['message'])
-    
+
+    # ==================== WEB & MEDIA HANDLERS ====================
+
+    def _web_handle_youtube_play(self, command: str = None):
+        """Play a YouTube video"""
+        query = command.replace("play youtube", "").replace("play video", "").replace("play on youtube", "").strip()
+        if not query:
+            query = command.replace("youtube", "").strip()
+        if query:
+            result = self.web_media.play_youtube(query)
+            if result.get('success'):
+                self._speak_with_emotion(f"Playing on YouTube: {query[:50]}", 'excited')
+            else:
+                self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+        else:
+            self._speak_text("What video would you like me to play on YouTube?")
+
+    def _web_handle_youtube_shorts(self, command: str = None):
+        """Play YouTube Shorts"""
+        query = command.replace("play shorts", "").replace("youtube shorts", "").replace("play short", "").strip()
+        if query:
+            result = self.web_media.play_youtube_shorts(query)
+            if result.get('success'):
+                self._speak_with_emotion(f"Playing YouTube Shorts: {query[:50]}", 'excited')
+        else:
+            self._speak_text("What YouTube Short would you like to see?")
+
+    def _web_handle_youtube_music(self, command: str = None):
+        """Play music on YouTube Music"""
+        query = command.replace("play music", "").replace("youtube music", "").replace("play song youtube", "").replace("music on youtube", "").strip()
+        if not query:
+            query = "all music"
+        result = self.web_media.play_youtube_music(query)
+        if result.get('success'):
+            self._speak_with_emotion(f"Playing music on YouTube: {query[:50]}", 'happy')
+        else:
+            self._speak_text(f"Error playing music: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_youtube_live(self, command: str = None):
+        """Play YouTube Live"""
+        query = command.replace("play live", "").replace("youtube live", "").replace("live stream", "").replace("live on youtube", "").strip()
+        if not query:
+            query = "live"
+        result = self.web_media.play_youtube_live(query)
+        if result.get('success'):
+            self._speak_with_emotion(f"Opening YouTube Live: {query[:50]}", 'excited')
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_youtube_playlist(self, command: str = None):
+        """Play a YouTube playlist"""
+        query = command.replace("play playlist", "").replace("youtube playlist", "").replace("playlist play", "").strip()
+        result = self.web_media.play_youtube_playlist(query=query)
+        if result.get('success'):
+            self._speak_with_emotion(f"Playing playlist: {query[:50]}", 'happy')
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_vimeo_play(self, command: str = None):
+        """Play a Vimeo video"""
+        query = command.replace("play vimeo", "").strip()
+        result = self.web_media.play_vimeo(query)
+        if result.get('success'):
+            self._speak_with_emotion(f"Playing on Vimeo: {query[:50]}", 'excited')
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_twitch_play(self, command: str = None):
+        """Play a Twitch stream"""
+        query = command.replace("play twitch", "").replace("twitch stream", "").replace("watch twitch", "").replace("twitch live", "").strip()
+        result = self.web_media.play_twitch_stream(channel=query if query else None)
+        if result.get('success'):
+            self._speak_with_emotion(f"Opening Twitch stream: {query[:50]}", 'excited')
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_twitch_clips(self, command: str = None):
+        """Browse Twitch clips"""
+        result = self.web_media.play_twitch_clips(command)
+        if result.get('success'):
+            self._speak_text("Opening Twitch clips")
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_netflix_play(self, command: str = None):
+        """Open Netflix"""
+        query = command.replace("play netflix", "").replace("netflix", "").replace("watch netflix", "").strip()
+        result = self.web_media.play_netflix(query if query else None)
+        if result.get('success'):
+            self._speak_with_emotion(f"Opening Netflix: {query[:50] if query else 'home'}", 'relaxed')
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_hulu_play(self, command: str = None):
+        """Open Hulu"""
+        query = command.replace("play hulu", "").replace("hulu", "").replace("watch hulu", "").strip()
+        result = self.web_media.play_hulu(query if query else None)
+        if result.get('success'):
+            self._speak_with_emotion(f"Opening Hulu: {query[:50] if query else 'home'}", 'relaxed')
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_prime_video_play(self, command: str = None):
+        """Open Amazon Prime Video"""
+        query = command.replace("play amazon prime", "").replace("prime video", "").replace("amazon video", "").strip()
+        result = self.web_media.play_amazon_prime(query if query else None)
+        if result.get('success'):
+            self._speak_with_emotion(f"Opening Amazon Prime Video: {query[:50] if query else 'home'}", 'relaxed')
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_disney_plus_play(self, command: str = None):
+        """Open Disney+"""
+        query = command.replace("play disney plus", "").replace("disney plus", "").replace("disney+", "").strip()
+        result = self.web_media.play_disney_plus(query if query else None)
+        if result.get('success'):
+            self._speak_with_emotion(f"Opening Disney+: {query[:50] if query else 'home'}", 'happy')
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_spotify_play(self, command: str = None):
+        """Open Spotify"""
+        query = command.replace("play spotify", "").replace("spotify music", "").replace("spotify", "").strip()
+        result = self.web_media.play_spotify(query if query else None)
+        if result.get('success'):
+            self._speak_with_emotion(f"Opening Spotify: {query[:50] if query else 'home'}", 'happy')
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_tiktok_open(self, command: str = None):
+        """Open TikTok"""
+        query = command.replace("open tiktok", "").replace("tiktok", "").replace("play tiktok", "").strip()
+        result = self.web_media.open_tiktok(query if query else None)
+        if result.get('success'):
+            self._speak_text(f"Opening TikTok: {query[:50] if query else 'home'}")
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_instagram_open(self, command: str = None):
+        """Open Instagram"""
+        query = command.replace("open instagram", "").replace("instagram", "").replace(" Insta", "").strip()
+        result = self.web_media.open_instagram(query if query else None)
+        if result.get('success'):
+            self._speak_text(f"Opening Instagram: {query[:50] if query else 'home'}")
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_twitter_open(self, command: str = None):
+        """Open Twitter/X"""
+        query = command.replace("open twitter", "").replace("open x", "").replace("x.com", "").replace("twitter open", "").strip()
+        result = self.web_media.open_twitter(query if query else None)
+        if result.get('success'):
+            self._speak_text(f"Opening Twitter/X: {query[:50] if query else 'home'}")
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_post_tweet(self, command: str = None):
+        """Post a tweet"""
+        tweet_text = command.replace("post a tweet", "").replace("tweet this", "").replace("tweet about", "").replace("send tweet", "").strip()
+        if tweet_text:
+            result = self.web_media.post_tweet(tweet_text)
+            if result.get('success'):
+                self._speak_text(f"Opening tweet composer with your message")
+            else:
+                self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+        else:
+            self._speak_text("What would you like to tweet?")
+
+    def _web_handle_post_video(self, command: str = None):
+        """Post a video to social media"""
+        result = self.web_media.post_video("youtube")
+        if result.get('success'):
+            self._speak_text(f"Opening video upload on YouTube")
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_google_search(self, command: str = None):
+        """Search Google"""
+        query = command.replace("google search", "").replace("google it", "").replace("search google", "").strip()
+        if query:
+            result = self.web_media.google_search(query)
+            if result.get('success'):
+                self._speak_text(f"Searching Google for: {query[:50]}")
+            else:
+                self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+        else:
+            self._speak_text("What would you like me to search for on Google?")
+
+    def _web_handle_google_maps(self, command: str = None):
+        """Open Google Maps"""
+        query = command.replace("google maps", "").replace("open maps", "").replace("navigate to", "").strip()
+        result = self.web_media.google_maps(query if query else None)
+        if result.get('success'):
+            self._speak_text(f"Opening Google Maps: {query[:50] if query else 'home'}")
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_google_translate(self, command: str = None):
+        """Open Google Translate"""
+        query = command.replace("translate", "").replace("google translate", "").replace("translate this", "").strip()
+        result = self.web_media.google_translate(query if query else None)
+        if result.get('success'):
+            self._speak_text(f"Opening Google Translate")
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_web_search(self, command: str = None):
+        """Search the web"""
+        query = command.replace("search the web", "").replace("search online", "").replace("look up online", "").strip()
+        if query:
+            result = self.web_media.web_search(query)
+            if result.get('success'):
+                self._speak_text(f"Searching the web for: {query[:50]}")
+            else:
+                self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+        else:
+            self._speak_text("What would you like me to search for online?")
+
+    def _web_handle_video_pause(self, command: str = None):
+        """Pause video playback"""
+        result = self.web_media.pause()
+        if result.get('success'):
+            self._speak_text("Playback paused")
+        else:
+            self._speak_text(result.get('message', 'Nothing is playing'))
+
+    def _web_handle_video_resume(self, command: str = None):
+        """Resume video playback"""
+        result = self.web_media.resume()
+        if result.get('success'):
+            self._speak_text("Playback resumed")
+        else:
+            self._speak_text(result.get('message', 'Nothing is paused'))
+
+    def _web_handle_video_stop(self, command: str = None):
+        """Stop video playback"""
+        result = self.web_media.stop()
+        if result.get('success'):
+            self._speak_text("Playback stopped")
+        else:
+            self._speak_text(result.get('message', 'Nothing is playing'))
+
+    def _web_handle_volume_set(self, command: str = None):
+        """Set volume level"""
+        import re
+        match = re.search(r'volume\s*(?:to|level)?\s*(\d+)', command)
+        if match:
+            level = int(match.group(1)) / 100.0
+            result = self.web_media.set_volume(level)
+            if result.get('success'):
+                self._speak_text(f"Volume set to {int(level * 100)}%")
+        else:
+            self._speak_text("Please specify a volume level (0-100)")
+
+    def _web_handle_video_next(self, command: str = None):
+        """Skip to next video"""
+        result = self.web_media.next_video()
+        if result.get('success'):
+            self._speak_text("Skipping to next video")
+        else:
+            self._speak_text(result.get('message', 'No next video'))
+
+    def _web_handle_video_previous(self, command: str = None):
+        """Go to previous video"""
+        result = self.web_media.previous_video()
+        if result.get('success'):
+            self._speak_text("Playing previous video")
+        else:
+            self._speak_text(result.get('message', 'No previous video'))
+
+    def _web_handle_create_playlist(self, command: str = None):
+        """Create a new playlist"""
+        name = command.replace("create playlist", "").replace("new playlist", "").replace("make playlist", "").strip()
+        if name:
+            result = self.web_media.create_playlist(name)
+            if result.get('success'):
+                self._speak_text(f"Created playlist: {name}")
+            else:
+                self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+        else:
+            self._speak_text("What would you like to name the playlist?")
+
+    def _web_handle_add_to_playlist(self, command: str = None):
+        """Add a video to a playlist"""
+        parts = command.replace("add to playlist", "").replace("playlist add", "").strip().split(" to ")
+        if len(parts) >= 2:
+            video = parts[0].strip()
+            playlist = parts[1].strip()
+            result = self.web_media.add_to_playlist(playlist, video)
+            if result.get('success'):
+                self._speak_text(f"Added '{video[:30]}' to playlist '{playlist}'")
+            else:
+                self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+        else:
+            self._speak_text("Please specify the video and playlist name")
+
+    def _web_handle_play_playlist(self, command: str = None):
+        """Play a playlist"""
+        name = command.replace("play playlist", "").replace("playlist play", "").replace("start playlist", "").strip()
+        if name:
+            result = self.web_media.play_playlist(name)
+            if result.get('success'):
+                self._speak_with_emotion(f"Playing playlist '{name}' with {result.get('data', {}).get('videos_count', 0)} videos", 'excited')
+            else:
+                self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+        else:
+            self._speak_text("Which playlist would you like to play?")
+
+    def _web_handle_list_playlists(self, command: str = None):
+        """List all playlists"""
+        result = self.web_media.list_playlists()
+        if result.get('success'):
+            playlists = result.get('playlists', [])
+            if playlists:
+                names = ', '.join([p['name'] for p in playlists])
+                self._speak_text(f"You have {len(playlists)} playlists: {names}")
+            else:
+                self._speak_text("You don't have any playlists yet")
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_add_bookmark(self, command: str = None):
+        """Add a bookmark"""
+        parts = command.replace("bookmark", "").replace("save bookmark", "").replace("add bookmark", "").strip().split(" at ")
+        if len(parts) >= 2:
+            name = parts[0].strip()
+            url = parts[1].strip()
+            result = self.web_media.add_bookmark(name, url)
+            if result.get('success'):
+                self._speak_text(f"Bookmarked: {name}")
+            else:
+                self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+        elif parts:
+            name = parts[0].strip()
+            result = self.web_media.add_bookmark(name, "")
+            if result.get('success'):
+                self._speak_text(f"Bookmarked: {name}")
+            else:
+                self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+        else:
+            self._speak_text("Please specify a bookmark name and URL")
+
+    def _web_handle_open_bookmark(self, command: str = None):
+        """Open a bookmark"""
+        name = command.replace("open bookmark", "").replace("go to bookmark", "").strip()
+        if name:
+            result = self.web_media.open_bookmark(name)
+            if result.get('success'):
+                self._speak_text(f"Opening bookmark: {name}")
+            else:
+                self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+        else:
+            self._speak_text("Which bookmark would you like to open?")
+
+    def _web_handle_list_bookmarks(self, command: str = None):
+        """List all bookmarks"""
+        result = self.web_media.list_bookmarks()
+        if result.get('success'):
+            bookmarks = result.get('bookmarks', {})
+            if bookmarks:
+                names = ', '.join(list(bookmarks.keys()))
+                self._speak_text(f"Your bookmarks: {names}")
+            else:
+                self._speak_text("You don't have any bookmarks yet")
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_download_video(self, command: str = None):
+        """Download a video"""
+        parts = command.replace("download video", "").replace("download youtube", "").replace("save video", "").strip().split(" to ")
+        if parts:
+            query_or_url = parts[0].strip()
+            result = self.web_media.download_youtube_video(query_or_url)
+            if result.get('success'):
+                self._speak_text(f"Downloading video: {query_or_url[:50]}")
+            else:
+                self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+        else:
+            self._speak_text("What video would you like to download?")
+
+    def _web_handle_download_audio(self, command: str = None):
+        """Download audio"""
+        parts = command.replace("download audio", "").replace("download mp3", "").replace("extract audio", "").strip().split(" to ")
+        if parts:
+            query_or_url = parts[0].strip()
+            result = self.web_media.download_youtube_audio(query_or_url)
+            if result.get('success'):
+                self._speak_text(f"Downloading audio: {query_or_url[:50]}")
+            else:
+                self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+        else:
+            self._speak_text("What audio would you like to download?")
+
+    def _web_handle_web_history(self, command: str = None):
+        """Show web browsing history"""
+        result = self.web_media.get_web_history()
+        if result.get('success'):
+            history = result.get('history', [])
+            if history:
+                recent = history[-5:]
+                sites = ', '.join([h.get('url', '')[:50] for h in recent])
+                self._speak_text(f"Recent history: {sites}")
+            else:
+                self._speak_text("No browsing history yet")
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    def _web_handle_close_browser(self, command: str = None):
+        """Close the browser"""
+        result = self.web_media.close_browser()
+        if result.get('success'):
+            self._speak_text("Browser closed")
+        else:
+            self._speak_text(f"Error: {result.get('message', 'Unknown error')}")
+
+    # Keep the original _speak_with_emotion
+
+    # ==================== AUTONOMOUS ACTION HANDLERS ====================
+
+    def _handle_autonomous_think(self, command: str = None):
+        """AI autonomous thinking"""
+        question = command.replace("think about", "").replace("what do you think", "").replace("analyze this", "").strip()
+        if not question:
+            question = "How should I approach this task?"
+
+        result = self.toolchain.autonomous_think(question)
+        self._speak_text(f"Thinking about: {question}. My analysis is ready.")
+        logger.info(f"Autonomous thinking: {result}")
+
+    def _handle_autonomous_decision(self, command: str = None):
+        """Make autonomous decision"""
+        decision = self.toolchain.autonomous_decide("Choose best action based on context", [])
+        self._speak_text("I've made a decision based on my analysis.")
+        logger.info(f"Autonomous decision: {decision}")
+
+    def _handle_create_plan(self, command: str = None):
+        """Create an action plan"""
+        goal = command.replace("make a plan", "").replace("create plan", "").replace("plan for", "").strip()
+        if not goal:
+            goal = "Complete the current task"
+
+        plan = self.toolchain.autonomous_plan(goal)
+        self._speak_text(f"Plan created for: {goal} with {len(plan.get('data', {}).get('steps', []))} steps.")
+        logger.info(f"Plan created: {plan}")
+
+    def _handle_execute_plan(self, command: str = None):
+        """Execute an action plan"""
+        self._speak_text("Executing plan step by step...")
+        result = self.toolchain.autonomous_execute_plan({}, 0)
+        self._speak_text("Plan execution completed.")
+        logger.info(f"Plan executed: {result}")
+
+    def _handle_set_goal(self, command: str = None):
+        """Set an autonomous goal"""
+        goal_text = command.replace("set goal", "").replace("add goal", "").replace("new goal", "").replace("i want you to", "").strip()
+        if not goal_text:
+            goal_text = "Complete all pending tasks"
+
+        result = self.toolchain.autonomous_set_goal(goal_text)
+        self._speak_text(f"Goal set: {goal_text}")
+        logger.info(f"Goal set: {result}")
+
+    def _handle_complete_goal(self, command: str = None):
+        """Mark a goal as complete"""
+        goal_text = command.replace("goal complete", "").replace("goal done", "").replace("finish goal", "").replace("completed goal", "").strip()
+        result = self.toolchain.autonomous_complete_goal(goal_text)
+        self._speak_text(f"Goal marked complete: {goal_text}")
+        logger.info(f"Goal completed: {result}")
+
+    def _handle_self_modify(self, command: str = None):
+        """Modify AI's own code"""
+        self._speak_text("Self-modification initiated.")
+        result = self.toolchain.autonomous_self_improve()
+        self._speak_text("Self-modification complete. AI code has been optimized.")
+        logger.info(f"Self-modify: {result}")
+
+    def _handle_self_improve(self, command: str = None):
+        """AI self-improvement"""
+        self._speak_text("Starting self-improvement process...")
+        result = self.toolchain.autonomous_self_improve()
+        self._speak_text("Self-improvement complete! I've optimized my own code.")
+        logger.info(f"Self-improve: {result}")
+
+    def _handle_self_analyze(self, command: str = None):
+        """Analyze AI's own code and performance"""
+        self._speak_text("Analyzing my own capabilities...")
+        result = self.toolchain.autonomous_self_analyze()
+        self._speak_text("Self-analysis complete. I've reviewed my performance and code quality.")
+        logger.info(f"Self-analyze: {result}")
+
+    def _handle_self_optimize(self, command: str = None):
+        """Optimize AI's performance"""
+        self._speak_text("Optimizing my performance...")
+        result = self.toolchain.autonomous_self_optimize()
+        self._speak_text("Performance optimization complete!")
+        logger.info(f"Self-optimize: {result}")
+
+    def _handle_shutdown(self, command: str = None):
+        """Shutdown the system"""
+        self._speak_text("Shutting down...")
+        result = self.toolchain.autonomous_shutdown()
+        logger.info(f"Shutdown: {result}")
+
+    def _handle_restart(self, command: str = None):
+        """Restart the system"""
+        self._speak_text("Restarting the system...")
+        result = self.toolchain.autonomous_restart()
+        logger.info(f"Restart: {result}")
+
+    def _handle_sleep(self, command: str = None):
+        """Put system to sleep"""
+        self._speak_text("Putting system to sleep...")
+        result = self.toolchain.autonomous_sleep()
+        logger.info(f"Sleep: {result}")
+
+    def _handle_system_status(self, command: str = None):
+        """Get comprehensive system status"""
+        result = self.toolchain.autonomous_system_status()
+        self._speak_text("Here's the system status.")
+        logger.info(f"System status: {result}")
+
+    def _handle_network_info(self, command: str = None):
+        """Get network information"""
+        result = self.toolchain.autonomous_network_info()
+        self._speak_text("Network information retrieved.")
+        logger.info(f"Network info: {result}")
+
+    def _handle_list_processes(self, command: str = None):
+        """List running processes"""
+        result = self.toolchain.autonomous_shell("ps aux | head -20")
+        self._speak_text("Process list retrieved.")
+        logger.info(f"Process list: {result}")
+
+    def _handle_kill_process(self, command: str = None):
+        """Kill a process"""
+        parts = command.replace("kill process", "").replace("stop process", "").replace("terminate", "").strip()
+        try:
+            pid = int(parts) if parts.isdigit() else None
+            result = self.toolchain.autonomous_kill_process(pid=pid, name=parts if not pid else None)
+            self._speak_text(f"Process terminated: {parts}")
+        except ValueError:
+            self._speak_text("Invalid process identifier.")
+        logger.info(f"Kill process: {command}")
+
+    def _handle_open_app(self, command: str = None):
+        """Open an application"""
+        app_name = command.replace("open app", "").replace("launch app", "").replace("start app", "").strip()
+        if not app_name:
+            app_name = command.replace("open", "").replace("launch", "").replace("start", "").strip()
+        if app_name:
+            result = self.toolchain.autonomous_open_app(app_name)
+            self._speak_text(f"Opening {app_name}...")
+        logger.info(f"Open app: {command}")
+
+    def _handle_close_app(self, command: str = None):
+        """Close an application"""
+        app_name = command.replace("close app", "").replace("quit app", "").replace("close application", "").strip()
+        if not app_name:
+            app_name = command.replace("close", "").replace("quit", "").strip()
+        if app_name:
+            result = self.toolchain.autonomous_close_app(app_name)
+            self._speak_text(f"Closing {app_name}...")
+        logger.info(f"Close app: {command}")
+
+    def _handle_list_apps(self, command: str = None):
+        """List all applications"""
+        result = self.toolchain.autonomous_list_apps()
+        self._speak_text(f"Found {len(result.get('data', [])) if isinstance(result.get('data'), list) else 0} running apps.")
+        logger.info(f"List apps: {result}")
+
+    def _handle_run_shell(self, command: str = None):
+        """Run a shell command"""
+        cmd = command.replace("run command", "").replace("execute shell", "").replace("terminal", "").replace("shell command", "").strip()
+        if cmd:
+            result = self.toolchain.autonomous_execute_shell(cmd)
+            self._speak_text("Shell command executed.")
+        logger.info(f"Shell command: {command}")
+
+    def _handle_run_python(self, command: str = None):
+        """Run Python code"""
+        code = command.replace("run python", "").replace("execute python", "").replace("python script", "").strip()
+        if code:
+            result = self.toolchain.autonomous_run_python(code)
+            self._speak_text("Python code executed.")
+        logger.info(f"Python execution: {command}")
+
+    def _handle_clipboard_copy(self, command: str = None):
+        """Copy to clipboard"""
+        text = command.replace("copy to clipboard", "").replace("clipboard copy", "").replace("copy this", "").strip()
+        if text:
+            result = self.toolchain.autonomous_clipboard_copy(text)
+            self._speak_text("Copied to clipboard.")
+        logger.info(f"Clipboard copy: {command}")
+
+    def _handle_clipboard_paste(self, command: str = None):
+        """Paste from clipboard"""
+        result = self.toolchain.autonomous_clipboard_paste()
+        self._speak_text("Clipboard content retrieved.")
+        logger.info(f"Clipboard paste: {result}")
+
+    def _handle_grant_permission(self, command: str = None):
+        """Grant permission"""
+        parts = command.replace("grant permission", "").replace("allow", "").replace("enable", "").strip().split()
+        if len(parts) >= 2:
+            perm_type, action = parts[0], parts[1]
+            result = self.toolchain.grant_permission(perm_type, action)
+            self._speak_text(f"Permission granted: {perm_type}.{action}")
+        logger.info(f"Grant permission: {command}")
+
+    def _handle_revoke_permission(self, command: str = None):
+        """Revoke permission"""
+        parts = command.replace("revoke permission", "").replace("deny", "").replace("block", "").strip().split()
+        if len(parts) >= 2:
+            perm_type, action = parts[0], parts[1]
+            result = self.toolchain.revoke_permission(perm_type, action)
+            self._speak_text(f"Permission revoked: {perm_type}.{action}")
+        logger.info(f"Revoke permission: {command}")
+
+    def _handle_show_permissions(self, command: str = None):
+        """Show all permissions"""
+        result = self.toolchain.get_permissions()
+        self._speak_text("Here are the current permissions.")
+        logger.info(f"Permissions: {result}")
+
+    def _handle_enable_all_permissions(self, command: str = None):
+        """Enable all permissions"""
+        result = self.toolchain.enable_full_permissions()
+        self._speak_text("All permissions enabled. Full autonomous access granted.")
+        logger.info(f"Enable all permissions: {result}")
+
+    def _handle_internet_search(self, command: str = None):
+        """Search the internet"""
+        query = command.replace("search the web", "").replace("search internet", "").replace("look up online", "").strip()
+        if query:
+            result = self.toolchain.autonomous_execute_shell(f"curl -s 'https://duckduckgo.com/html/?q={query}'")
+            self._speak_text(f"Searching for: {query}")
+        logger.info(f"Internet search: {command}")
+
+    def _handle_browse_website(self, command: str = None):
+        """Browse a website"""
+        url = command.replace("browse", "").replace("visit website", "").replace("open website", "").replace("go to website", "").strip()
+        if url:
+            result = self.toolchain.autonomous_open_app(url)
+            self._speak_text(f"Opening {url}...")
+        logger.info(f"Browse website: {command}")
+
+    def _handle_download_file(self, command: str = None):
+        """Download a file"""
+        url = command.replace("download", "").replace("download file", "").replace("get file", "").strip()
+        if url:
+            result = self.toolchain.autonomous_shell(f"curl -O {url}")
+            self._speak_text(f"Downloading file from {url}")
+        logger.info(f"Download file: {command}")
+
+    def _handle_memory_save(self, command: str = None):
+        """Save to autonomous memory"""
+        content = command.replace("remember this", "").replace("save memory", "").replace("store memory", "").replace("note this", "").strip()
+        if content:
+            result = self.toolchain.autonomous_shell(f"echo '{content}' >> {self.toolchain.base_dir}/data/autonomous_memory.txt")
+            self._speak_text("Information saved to memory.")
+        logger.info(f"Memory save: {command}")
+
+    def _handle_memory_retrieve(self, command: str = None):
+        """Retrieve from autonomous memory"""
+        result = self.toolchain.autonomous_shell(f"cat {self.toolchain.base_dir}/data/autonomous_memory.txt 2>/dev/null || echo 'No memories found'")
+        self._speak_text("Retrieving memories...")
+        logger.info(f"Memory retrieve: {result}")
+
+    # Keep the original existing handler methods below
     def _speak_with_emotion(self, text: str, emotion: str = 'neutral'):
         """Speak with emotion"""
         # Map emotion to mood system

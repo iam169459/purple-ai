@@ -172,6 +172,114 @@ COMMAND_REGISTRY = {
     
     # Show object to camera
     "show_object": {"patterns": ["what is this", "what do you see", "look at this", "what am i showing"], "handler": "_handle_show_object", "priority": 28},
+
+    # ==================== YOUTUBE / VIDEO ====================
+    "youtube_play": {"patterns": ["play youtube", "play video", "play on youtube", "youtube play"], "handler": "_web_handle_youtube_play", "priority": 85},
+    "youtube_shorts": {"patterns": ["play shorts", "youtube shorts", "play short"], "handler": "_web_handle_youtube_shorts", "priority": 84},
+    "youtube_music": {"patterns": ["play music", "youtube music", "play song youtube", "music on youtube"], "handler": "_web_handle_youtube_music", "priority": 84},
+    "youtube_live": {"patterns": ["play live", "youtube live", "live stream", "live on youtube"], "handler": "_web_handle_youtube_live", "priority": 84},
+    "youtube_playlist": {"patterns": ["play playlist", "youtube playlist", "playlist play"], "handler": "_web_handle_youtube_playlist", "priority": 83},
+    "vimeo_play": {"patterns": ["play vimeo", "vimeo video"], "handler": "_web_handle_vimeo_play", "priority": 82},
+    "twitch_play": {"patterns": ["play twitch", "twitch stream", "watch twitch", "twitch live"], "handler": "_web_handle_twitch_play", "priority": 82},
+    "twitch_clips": {"patterns": ["twitch clips", "play clips", "watch clips"], "handler": "_web_handle_twitch_clips", "priority": 81},
+
+    # ==================== STREAMING SERVICES ====================
+    "netflix_play": {"patterns": ["play netflix", "netflix", "watch netflix"], "handler": "_web_handle_netflix_play", "priority": 80},
+    "hulu_play": {"patterns": ["play hulu", "hulu", "watch hulu"], "handler": "_web_handle_hulu_play", "priority": 80},
+    "prime_video": {"patterns": ["play amazon prime", "prime video", "amazon video"], "handler": "_web_handle_prime_video_play", "priority": 80},
+    "disney_plus": {"patterns": ["play disney plus", "disney plus", "disney+"], "handler": "_web_handle_disney_plus_play", "priority": 80},
+    "spotify_play": {"patterns": ["play spotify", "spotify", "play music spotify", "spotify music"], "handler": "_web_handle_spotify_play", "priority": 80},
+
+    # ==================== SOCIAL MEDIA ====================
+    "tiktok_open": {"patterns": ["open tiktok", "tiktok", "play tiktok", "tiktok open"], "handler": "_web_handle_tiktok_open", "priority": 78},
+    "instagram_open": {"patterns": ["open instagram", "instagram", " Insta", " insta "], "handler": "_web_handle_instagram_open", "priority": 78},
+    "twitter_open": {"patterns": ["open twitter", "open x", "twitter", "x.com", "twitter open"], "handler": "_web_handle_twitter_open", "priority": 78},
+    "post_tweet": {"patterns": ["post a tweet", "tweet this", "tweet about", "send tweet"], "handler": "_web_handle_post_tweet", "priority": 77},
+    "post_video": {"patterns": ["post video", "upload video", "share video"], "handler": "_web_handle_post_video", "priority": 77},
+
+    # ==================== GOOGLE & SEARCH ====================
+    "google_search": {"patterns": ["google search", "google it", "search google"], "handler": "_handle_google_search", "priority": 75},
+    "google_maps": {"patterns": ["google maps", "open maps", "navigate to"], "handler": "_web_handle_google_maps", "priority": 75},
+    "google_translate": {"patterns": ["translate", "google translate", "translate this"], "handler": "_web_handle_google_translate", "priority": 74},
+    "web_search": {"patterns": ["search the web", "search online", "look up online"], "handler": "_web_handle_web_search", "priority": 70},
+
+    # ==================== VIDEO CONTROLS ====================
+    "video_pause": {"patterns": ["pause", "pause video", "pause playing"], "handler": "_web_handle_video_pause", "priority": 60},
+    "video_resume": {"patterns": ["resume", "resume video", "continue playing"], "handler": "_web_handle_video_resume", "priority": 60},
+    "video_stop": {"patterns": ["stop", "stop video", "stop playing", "stop video"], "handler": "_web_handle_video_stop", "priority": 60},
+    "volume_set": {"patterns": ["set volume", "volume to", "volume level"], "handler": "_web_handle_volume_set", "priority": 59},
+    "video_next": {"patterns": ["next video", "skip", "next", "forward"], "handler": "_web_handle_video_next", "priority": 58},
+    "video_previous": {"patterns": ["previous video", "previous", "back"], "handler": "_web_handle_video_previous", "priority": 58},
+
+    # ==================== PLAYLIST MANAGEMENT ====================
+    "create_playlist": {"patterns": ["create playlist", "new playlist", "make playlist"], "handler": "_web_handle_create_playlist", "priority": 55},
+    "add_to_playlist": {"patterns": ["add to playlist", "playlist add"], "handler": "_web_handle_add_to_playlist", "priority": 55},
+    "play_playlist": {"patterns": ["play playlist", "playlist play", "start playlist"], "handler": "_web_handle_play_playlist", "priority": 55},
+    "list_playlists": {"patterns": ["show playlists", "list playlists", "my playlists"], "handler": "_web_handle_list_playlists", "priority": 54},
+
+    # ==================== BOOKMARKS ====================
+    "add_bookmark": {"patterns": ["bookmark", "save bookmark", "add bookmark"], "handler": "_web_handle_add_bookmark", "priority": 50},
+    "open_bookmark": {"patterns": ["open bookmark", "go to bookmark"], "handler": "_web_handle_open_bookmark", "priority": 50},
+    "list_bookmarks": {"patterns": ["show bookmarks", "list bookmarks", "my bookmarks"], "handler": "_web_handle_list_bookmarks", "priority": 50},
+
+    # ==================== DOWNLOADS ====================
+    "download_video": {"patterns": ["download video", "download youtube", "save video"], "handler": "_web_handle_download_video", "priority": 45},
+    "download_audio": {"patterns": ["download audio", "download mp3", "extract audio"], "handler": "_web_handle_download_audio", "priority": 45},
+
+    # ==================== WEB HISTORY ====================
+    "web_history": {"patterns": ["history", "web history", "browsing history"], "handler": "_web_handle_web_history", "priority": 40},
+    "close_browser": {"patterns": ["close browser", "close tab", "close all tabs"], "handler": "_web_handle_close_browser", "priority": 35},
+
+    # ==================== AUTONOMOUS ACTIONS ====================
+    "think": {"patterns": ["think about", "what do you think", "analyze this", "consider", "reflect on"], "handler": "_handle_autonomous_think", "priority": 95},
+    "autonomous_decision": {"patterns": ["decide", "make decision", "choose between", "what should i do", "help me decide"], "handler": "_handle_autonomous_decision", "priority": 94},
+    "create_plan": {"patterns": ["make a plan", "create plan", "plan for", "action plan", "step by step"], "handler": "_handle_create_plan", "priority": 93},
+    "execute_plan": {"patterns": ["execute plan", "run plan", "start plan"], "handler": "_handle_execute_plan", "priority": 92},
+    "set_goal": {"patterns": ["set goal", "add goal", "new goal", "i want you to", "objective"], "handler": "_handle_set_goal", "priority": 91},
+    "complete_goal": {"patterns": ["goal complete", "goal done", "finish goal", "completed goal"], "handler": "_handle_complete_goal", "priority": 90},
+    "self_modify": {"patterns": ["modify code", "edit code", "change code", "update code", "rewrite code"], "handler": "_handle_self_modify", "priority": 89},
+    "self_improve": {"patterns": ["improve yourself", "auto improve", "optimize", "optimize yourself", "get better", "self improve"], "handler": "_handle_self_improve", "priority": 88},
+    "self_analyze": {"patterns": ["self analyze", "analyze yourself", "how smart", "your abilities", "self review"], "handler": "_handle_self_analyze", "priority": 87},
+    "self_optimize": {"patterns": ["self optimize", "optimize performance", "speed up", "improve speed"], "handler": "_handle_self_optimize", "priority": 86},
+
+    # System control
+    "shutdown": {"patterns": ["shutdown", "shut down", "turn off the system", "power off"], "handler": "_handle_shutdown", "priority": 15},
+    "restart": {"patterns": ["restart", "reboot", "restart the system"], "handler": "_handle_restart", "priority": 15},
+    "sleep": {"patterns": ["sleep", "suspend", "hibernate"], "handler": "_handle_sleep", "priority": 15},
+    "system_status": {"patterns": ["system status", "computer status", "system info detailed"], "handler": "_handle_system_status", "priority": 14},
+    "network_info": {"patterns": ["network info", "network details", "ip address", "wifi info"], "handler": "_handle_network_info", "priority": 13},
+
+    # Process control
+    "list_processes": {"patterns": ["list processes", "running processes", "what processes", "all processes"], "handler": "_handle_list_processes", "priority": 12},
+    "kill_process": {"patterns": ["kill process", "stop process", "end process", "terminate"], "handler": "_handle_kill_process", "priority": 12},
+
+    # App control
+    "open_app": {"patterns": ["open app", "launch app", "start app", "open application"], "handler": "_handle_open_app", "priority": 11},
+    "close_app": {"patterns": ["close app", "quit app", "close application"], "handler": "_handle_close_app", "priority": 11},
+    "list_apps": {"patterns": ["list apps", "all apps", "installed apps", "app list"], "handler": "_handle_list_apps", "priority": 10},
+
+    # Shell commands
+    "run_shell": {"patterns": ["run command", "execute shell", "terminal", "shell command"], "handler": "_handle_run_shell", "priority": 8},
+    "run_python": {"patterns": ["run python", "execute python", "python script"], "handler": "_handle_run_python", "priority": 8},
+
+    # Clipboard
+    "clipboard_copy": {"patterns": ["copy to clipboard", "clipboard copy", "copy this"], "handler": "_handle_clipboard_copy", "priority": 7},
+    "clipboard_paste": {"patterns": ["paste clipboard", "clipboard paste", "paste this"], "handler": "_handle_clipboard_paste", "priority": 7},
+
+    # Permission management
+    "grant_permission": {"patterns": ["grant permission", "allow", "enable", "give permission"], "handler": "_handle_grant_permission", "priority": 6},
+    "revoke_permission": {"patterns": ["revoke permission", "deny", "block", "remove permission"], "handler": "_handle_revoke_permission", "priority": 6},
+    "show_permissions": {"patterns": ["show permissions", "list permissions", "what permissions", "current permissions"], "handler": "_handle_show_permissions", "priority": 5},
+    "enable_all_permissions": {"patterns": ["enable all", "full access", "grant all", "full permissions"], "handler": "_handle_enable_all_permissions", "priority": 4},
+
+    # Internet
+    "internet_search": {"patterns": ["search the web", "search internet", "look up online"], "handler": "_handle_internet_search", "priority": 3},
+    "browse_website": {"patterns": ["browse", "visit website", "open website", "go to website"], "handler": "_handle_browse_website", "priority": 3},
+    "download_file": {"patterns": ["download", "download file", "get file"], "handler": "_handle_download_file", "priority": 3},
+
+    # Autonomous memory
+    "memory_save": {"patterns": ["remember this", "save memory", "store memory", "note this"], "handler": "_handle_memory_save", "priority": 2},
+    "memory_retrieve": {"patterns": ["recall memory", "check memory", "what do you remember", "retrieve memory"], "handler": "_handle_memory_retrieve", "priority": 2},
 }
 
 

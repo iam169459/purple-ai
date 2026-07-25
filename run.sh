@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Purple AI - Run Script (Single Instance)
+# Purple AI - Run Script (Voice-Only AI Assistant)
+# Always listening, voice-controlled, fully autonomous
 
 set -e
 
-# Project directory
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 VENV_DIR="$PROJECT_DIR/venv"
 MAIN_SCRIPT="$PROJECT_DIR/main.py"
@@ -12,7 +12,6 @@ REQ_FILE="$PROJECT_DIR/requirements.txt"
 LOCK_FILE="/tmp/purple_ai.lock"
 PID_FILE="/tmp/purple_ai.pid"
 
-# Kill any existing purple ai processes
 kill_existing() {
     if [ -f "$PID_FILE" ]; then
         OLD_PID=$(cat "$PID_FILE")
@@ -24,10 +23,10 @@ kill_existing() {
         rm -f "$PID_FILE"
     fi
     pkill -f "python.*main.py" 2>/dev/null || true
+    pkill -f "python.*purple_service" 2>/dev/null || true
     rm -f "$LOCK_FILE"
 }
 
-# Check if already running
 check_single_instance() {
     if [ -f "$PID_FILE" ]; then
         OLD_PID=$(cat "$PID_FILE")
@@ -42,24 +41,20 @@ check_single_instance() {
     rm -f "$LOCK_FILE"
 }
 
-# Create lock file
 create_lock() {
     echo $$ > "$PID_FILE"
     touch "$LOCK_FILE"
 }
 
-# Remove lock file
 remove_lock() {
     rm -f "$LOCK_FILE" "$PID_FILE"
 }
 
-# Stop running instance
 stop_instance() {
     kill_existing
     echo "Purple AI stopped!"
 }
 
-# Check Python
 check_python() {
     if command -v python3 &>/dev/null; then
         PYTHON="python3"
@@ -71,7 +66,6 @@ check_python() {
     fi
 }
 
-# Setup virtual environment
 setup_venv() {
     if [ ! -d "$VENV_DIR" ]; then
         echo "Creating virtual environment..."
@@ -85,12 +79,10 @@ setup_venv() {
     fi
 }
 
-# Activate venv
 activate_venv() {
     source "$VENV_DIR/bin/activate"
 }
 
-# Clean function
 clean() {
     echo "Cleaning..."
     kill_existing
@@ -99,10 +91,11 @@ clean() {
     rm -rf "$PROJECT_DIR"/utils/__pycache__
     rm -rf "$PROJECT_DIR"/core/__pycache__
     rm -rf "$PROJECT_DIR"/voice/__pycache__
+    rm -rf "$PROJECT_DIR"/*.log
+    rm -rf "$PROJECT_DIR"/logs/*.log.old
     echo "Cleaned!"
 }
 
-# Diagnostics function
 diagnose() {
     check_python
     setup_venv
@@ -118,17 +111,14 @@ print(f'Healthy: {results[\"healthy\"]}')
 "
 }
 
-# Cleanup on exit
 cleanup() {
     remove_lock
 }
 trap cleanup EXIT
 
-# Main execution
 main() {
     check_python
     
-    # Handle arguments
     case "${1:-}" in
         stop)
             stop_instance
@@ -147,7 +137,7 @@ main() {
             setup_venv
             activate_venv
             cd "$PROJECT_DIR"
-            nohup $PYTHON "$MAIN_SCRIPT" > logs/purple_ai.log 2>&1 &
+            nohup $PYTHON "$MAIN_SCRIPT" --background > logs/purple_ai.log 2>&1 &
             echo $! > "$PID_FILE"
             echo "Purple AI started in background (PID: $!)"
             echo "Log: logs/purple_ai.log"
@@ -163,15 +153,15 @@ main() {
             exit 0
             ;;
         --help|-h)
-            echo "Purple AI - Voice-Controlled AI Assistant"
+            echo "Purple AI - Voice-Only AI Assistant"
             echo ""
             echo "Usage: ./run.sh [option]"
             echo ""
             echo "Options:"
-            echo "  (no args)    Run Purple AI (foreground)"
+            echo "  (no args)    Run Purple AI (foreground, voice-only)"
             echo "  background   Run in background (always listening)"
             echo "  stop         Stop running instance"
-            echo "  clean        Clean temporary files"
+            echo "  clean        Clean temp files and logs"
             echo "  diagnose     Run system diagnostics"
             echo "  service      Background service control"
             echo "  wake-words   Show all active wake words"
@@ -184,25 +174,23 @@ main() {
             echo "  ./run.sh service install    Auto-start on login"
             echo "  ./run.sh service logs       Watch live logs"
             echo ""
-            echo "Always listening for wake words:"
-            echo "  purple, hey purple, hello purple"
-            echo "  ai, hey ai, computer, jarvis"
-            echo "  wake up, listen, hello, hey"
+            echo "Voice commands (always active):"
+            echo "  'purple' or 'hey purple' - Activate assistant"
+            echo "  'play youtube [song]' - Play music/video"
+            echo "  'play netflix/show' - Open streaming"
+            echo "  'google search [query]' - Search web"
+            echo "  'open [app]' - Launch applications"
+            echo "  'shutdown/restart' - System control"
+            echo "  'help' - Show all commands"
+            echo "  'goodbye' - Exit"
             exit 0
             ;;
     esac
     
-    # Kill any existing instances first
     kill_existing
-    
-    # Check single instance
     check_single_instance
-    
-    # Setup and run
     setup_venv
     activate_venv
-    
-    # Create lock
     create_lock
     
     cd "$PROJECT_DIR"

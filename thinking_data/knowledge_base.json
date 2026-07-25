@@ -3,8 +3,8 @@
   "learned": {
     "recent_session": {
       "first_seen": "2026-07-24T00:35:44.422406",
-      "count": 12,
-      "success_rate": 12,
+      "count": 17,
+      "success_rate": 17,
       "source": "interaction"
     },
     "sorry": {
@@ -27,8 +27,8 @@
     },
     "your": {
       "first_seen": "2026-07-24T17:40:42.522659",
-      "count": 4,
-      "success_rate": 4,
+      "count": 5,
+      "success_rate": 5,
       "source": "interaction"
     },
     "voice": {
@@ -105,14 +105,14 @@
     },
     "that's": {
       "first_seen": "2026-07-24T18:51:48.986380",
-      "count": 1,
-      "success_rate": 1,
+      "count": 2,
+      "success_rate": 2,
       "source": "interaction"
     },
     "really": {
       "first_seen": "2026-07-24T18:51:48.986384",
-      "count": 1,
-      "success_rate": 1,
+      "count": 2,
+      "success_rate": 2,
       "source": "interaction"
     },
     "interesting": {
@@ -123,8 +123,8 @@
     },
     "that's really": {
       "first_seen": "2026-07-24T18:51:48.986387",
-      "count": 1,
-      "success_rate": 1,
+      "count": 2,
+      "success_rate": 2,
       "source": "interaction"
     },
     "really interesting": {
@@ -171,8 +171,8 @@
     },
     "what's": {
       "first_seen": "2026-07-24T23:14:35.394598",
-      "count": 1,
-      "success_rate": 1,
+      "count": 2,
+      "success_rate": 2,
       "source": "interaction"
     },
     "screen": {
@@ -209,6 +209,60 @@
       "first_seen": "2026-07-24T23:25:50.136762",
       "count": 1,
       "success_rate": 1,
+      "source": "interaction"
+    },
+    "playit": {
+      "first_seen": "2026-07-25T15:24:58.271018",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "tell": {
+      "first_seen": "2026-07-25T23:31:48.129906",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "joke": {
+      "first_seen": "2026-07-25T23:31:48.129912",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "tell a": {
+      "first_seen": "2026-07-25T23:31:48.129914",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "a joke": {
+      "first_seen": "2026-07-25T23:31:48.129916",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "greeting": {
+      "first_seen": "2026-07-25T23:32:26.943242",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "what's your": {
+      "first_seen": "2026-07-25T23:32:26.943245",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "your greeting": {
+      "first_seen": "2026-07-25T23:32:26.943247",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "exit": {
+      "first_seen": "2026-07-25T23:33:03.475672",
+      "count": 2,
+      "success_rate": 2,
       "source": "interaction"
     }
   },

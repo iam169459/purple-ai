@@ -1,6 +1,6 @@
 """
 Toolchain - Full system access and control
-Provides complete computer control capabilities
+Provides complete computer control capabilities with autonomous actions
 """
 import os
 import sys
@@ -13,6 +13,7 @@ import time
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Union
 from logger import logger
+from utils.autonomous_engine import autonomous_engine
 
 class Toolchain:
     def __init__(self):
@@ -473,11 +474,188 @@ class Toolchain:
     def get_history(self) -> List[Dict[str, Any]]:
         """Get command history"""
         return self.command_history[-20:]  # Last 20 commands
-    
+
     def clear_history(self) -> Dict[str, Any]:
         """Clear command history"""
         self.command_history = []
         return {"success": True, "message": "History cleared"}
+
+    # ==================== AUTONOMOUS ACTIONS ====================
+
+    def autonomous_think(self, question: str, context: dict = None) -> Dict[str, Any]:
+        """AI autonomous thinking and decision making"""
+        return autonomous_engine.think(question, context or {})
+
+    def autonomous_decide(self, question: str, options: List[str] = None) -> Dict[str, Any]:
+        """Make autonomous decision"""
+        return autonomous_engine.execute_action("decision_make", {
+            "question": question,
+            "options": options or []
+        })
+
+    def autonomous_plan(self, goal: str, steps: List[dict] = None) -> Dict[str, Any]:
+        """Create and execute an action plan"""
+        plan_result = autonomous_engine.execute_action("plan_create", {
+            "goal": goal,
+            "steps": steps or []
+        })
+        return plan_result.to_dict()
+
+    def autonomous_execute_plan(self, plan: dict, step: int = 0) -> Dict[str, Any]:
+        """Execute a plan step by step"""
+        return autonomous_engine.execute_action("plan_execute", {
+            "plan": plan,
+            "step": step
+        }).to_dict()
+
+    def autonomous_set_goal(self, goal: str, priority: int = 5) -> Dict[str, Any]:
+        """Set an autonomous goal"""
+        return autonomous_engine.execute_action("goal_set", {
+            "goal": goal,
+            "priority": priority
+        }).to_dict()
+
+    def autonomous_complete_goal(self, goal: str) -> Dict[str, Any]:
+        """Mark a goal as complete"""
+        return autonomous_engine.execute_action("goal_complete", {
+            "goal": goal
+        }).to_dict()
+
+    def autonomous_modify_code(self, file: str, modifications: List[dict]) -> Dict[str, Any]:
+        """Modify AI's own code"""
+        return autonomous_engine.execute_action("self_modify", {
+            "file": file,
+            "modifications": modifications
+        }).to_dict()
+
+    def autonomous_self_improve(self) -> Dict[str, Any]:
+        """AI self-improvement - optimize its own code"""
+        return autonomous_engine.execute_action("self_improve").to_dict()
+
+    def autonomous_self_analyze(self) -> Dict[str, Any]:
+        """Analyze AI's own code and performance"""
+        return autonomous_engine.execute_action("self_analyze").to_dict()
+
+    def autonomous_self_optimize(self) -> Dict[str, Any]:
+        """Optimize AI's performance"""
+        return autonomous_engine.execute_action("self_optimize").to_dict()
+
+    def autonomous_execute_shell(self, command: str) -> Dict[str, Any]:
+        """Execute a shell command with full permissions"""
+        return autonomous_engine.execute_action("shell_execute", {
+            "command": command
+        }).to_dict()
+
+    def autonomous_run_python(self, code: str) -> Dict[str, Any]:
+        """Execute Python code with full permissions"""
+        return autonomous_engine.execute_action("python_execute", {
+            "code": code
+        }).to_dict()
+
+    def autonomous_open_app(self, app_name: str) -> Dict[str, Any]:
+        """Open an application"""
+        return autonomous_engine.execute_action("app_open", {
+            "app": app_name
+        }).to_dict()
+
+    def autonomous_close_app(self, app_name: str) -> Dict[str, Any]:
+        """Close an application"""
+        return autonomous_engine.execute_action("app_close", {
+            "app": app_name
+        }).to_dict()
+
+    def autonomous_list_apps(self) -> Dict[str, Any]:
+        """List running applications"""
+        return autonomous_engine.execute_action("app_list").to_dict()
+
+    def autonomous_kill_process(self, pid: int = None, name: str = None) -> Dict[str, Any]:
+        """Kill a process by PID or name"""
+        return autonomous_engine.execute_action("process_kill", {
+            "pid": pid,
+            "name": name
+        }).to_dict()
+
+    # ==================== PERMISSION MANAGEMENT ====================
+
+    def grant_permission(self, perm_type: str, action: str, value: bool = True) -> Dict[str, Any]:
+        """Grant a permission"""
+        return autonomous_engine.grant_permission(perm_type, action, value).to_dict()
+
+    def revoke_permission(self, perm_type: str, action: str) -> Dict[str, Any]:
+        """Revoke a permission"""
+        return autonomous_engine.revoke_permission(perm_type, action).to_dict()
+
+    def get_permissions(self) -> Dict[str, Any]:
+        """Get all current permissions"""
+        return {"success": True, "data": autonomous_engine.get_all_permissions()}
+
+    def enable_full_permissions(self) -> Dict[str, Any]:
+        """Enable all permissions for full autonomous operation"""
+        return autonomous_engine.enable_full_permissions().to_dict()
+
+    def disable_all_permissions(self) -> Dict[str, Any]:
+        """Disable all permissions for safety"""
+        return autonomous_engine.disable_all_permissions().to_dict()
+
+    # ==================== FILE SYSTEM OPERATIONS ====================
+
+    def autonomous_read_file(self, filepath: str) -> Dict[str, Any]:
+        """Read file with autonomous permissions"""
+        return autonomous_engine.execute_action("file_read", {
+            "path": filepath
+        }).to_dict()
+
+    def autonomous_write_file(self, filepath: str, content: str, mode: str = "w") -> Dict[str, Any]:
+        """Write file with autonomous permissions"""
+        return autonomous_engine.execute_action("file_write", {
+            "path": filepath,
+            "content": content,
+            "mode": mode
+        }).to_dict()
+
+    def autonomous_delete_file(self, filepath: str) -> Dict[str, Any]:
+        """Delete file with autonomous permissions"""
+        return autonomous_engine.execute_action("file_delete", {
+            "path": filepath
+        }).to_dict()
+
+    def autonomous_execute_file(self, filepath: str) -> Dict[str, Any]:
+        """Execute a file as a script"""
+        return autonomous_engine.execute_action("file_execute", {
+            "path": filepath
+        }).to_dict()
+
+    # ==================== SYSTEM CONTROL ====================
+
+    def autonomous_shutdown(self) -> Dict[str, Any]:
+        """Shutdown the system"""
+        return autonomous_engine.execute_action("system_shutdown").to_dict()
+
+    def autonomous_restart(self) -> Dict[str, Any]:
+        """Restart the system"""
+        return autonomous_engine.execute_action("system_restart").to_dict()
+
+    def autonomous_sleep(self) -> Dict[str, Any]:
+        """Put system to sleep"""
+        return autonomous_engine.execute_action("system_sleep").to_dict()
+
+    def autonomous_system_status(self) -> Dict[str, Any]:
+        """Get comprehensive system status"""
+        return autonomous_engine.execute_action("system_status").to_dict()
+
+    def autonomous_network_info(self) -> Dict[str, Any]:
+        """Get network information"""
+        return autonomous_engine.execute_action("network_info").to_dict()
+
+    def autonomous_clipboard_copy(self, text: str) -> Dict[str, Any]:
+        """Copy text to clipboard"""
+        return autonomous_engine.execute_action("clipboard_copy", {
+            "text": text
+        }).to_dict()
+
+    def autonomous_clipboard_paste(self) -> Dict[str, Any]:
+        """Paste text from clipboard"""
+        return autonomous_engine.execute_action("clipboard_paste").to_dict()
 
 
 # Global instance
