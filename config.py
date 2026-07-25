@@ -211,24 +211,12 @@ class Config:
         'tanvi'
     ]
     
-    # Voice Control settings - All wake words always active
+    # Voice Control settings - Restricted wake words
     WAKE_WORDS = [
-        'purple', 'hey purple', 'hello purple', 'okay purple', 'ok purple', 
-        'hi purple', 'a purple', 'ai', 'hey ai', 'hello ai', 'hi ai',
-        'computer', 'hey computer', 'assistant', 'hey assistant',
-        'jarvis', 'hey jarvis', 'alexa', 'hey alexa', 'siri',
-        'computer', 'hey computer', 'wake up', 'listen',
-        'can you hear me', 'are you there', 'are you listening',
-        'excuse me', 'pardon me', 'yo', 'hey', 'hello',
-        'morning', 'afternoon', 'evening', 'night'
+        'purple', 'purple ai', 'ai'
     ]
     WAKE_WORDS_BANGLA = [
-        'পার্পেল', 'হে পার্পেল', 'পার্পেল হেল্প', 'হেল্প', 'পার্পেল আই',
-        'কম্পিউটার', 'হে কম্পিউটার', 'সহায়তা', 'হে সহায়তা',
-        'জার্ভিস', 'হে জার্ভিস', 'ওয়েক আপ', 'শোনো',
-        'তুমি কি শুনতে পারো', 'তুমি কি আছো', 'আছো কি',
-        'দয়া করে', 'কি হলো', 'নমস্কার', 'হ্যালো',
-        'সুপ্রভাত', 'শুভ অপরাহ্ন', 'শুভ সন্ধ্যা', 'শুভ রাত্রি'
+        'পার্পেল', 'পার্পেল আই', 'আই'
     ]
     CONTINUOUS_LISTENING = True
     ALWAYS_ACTIVE = True  # Always listening in background
