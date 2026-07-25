@@ -37,23 +37,23 @@ class TTSEngine:
         self._initialize_tts()
     
     def _setup_emotion_profiles(self):
-        """Setup voice profiles for different emotions"""
+        """Setup voice profiles for different emotions - tuned for natural speech"""
         return {
-            'happy': {'rate': 160, 'pitch': 1.1, 'volume': 0.9, 'emphasis': '!'},
-            'excited': {'rate': 180, 'pitch': 1.2, 'volume': 1.0, 'emphasis': '!!'},
-            'sad': {'rate': 130, 'pitch': 0.85, 'volume': 0.7, 'emphasis': '...'},
-            'angry': {'rate': 170, 'pitch': 1.15, 'volume': 0.95, 'emphasis': '!'},
-            'worried': {'rate': 145, 'pitch': 1.05, 'volume': 0.75, 'emphasis': '?'},
-            'confused': {'rate': 140, 'pitch': 0.95, 'volume': 0.8, 'emphasis': '?'},
-            'tired': {'rate': 120, 'pitch': 0.8, 'volume': 0.65, 'emphasis': '...'},
-            'proud': {'rate': 155, 'pitch': 1.1, 'volume': 0.9, 'emphasis': '!'},
-            'love': {'rate': 135, 'pitch': 1.05, 'volume': 0.85, 'emphasis': ''},
-            'sarcastic': {'rate': 150, 'pitch': 0.9, 'volume': 0.85, 'emphasis': '...'},
-            'bored': {'rate': 125, 'pitch': 0.85, 'volume': 0.7, 'emphasis': '...'},
-            'surprised': {'rate': 175, 'pitch': 1.25, 'volume': 0.95, 'emphasis': '!'},
-            'grateful': {'rate': 145, 'pitch': 1.05, 'volume': 0.85, 'emphasis': ''},
-            'motivated': {'rate': 170, 'pitch': 1.15, 'volume': 0.95, 'emphasis': '!'},
-            'neutral': {'rate': 150, 'pitch': 1.0, 'volume': 0.85, 'emphasis': ''}
+            'happy': {'rate': 175, 'pitch': 1.05, 'volume': 0.9, 'emphasis': '!'},
+            'excited': {'rate': 185, 'pitch': 1.1, 'volume': 0.95, 'emphasis': '!!'},
+            'sad': {'rate': 150, 'pitch': 0.95, 'volume': 0.75, 'emphasis': '...'},
+            'angry': {'rate': 170, 'pitch': 1.0, 'volume': 0.9, 'emphasis': '!'},
+            'worried': {'rate': 160, 'pitch': 1.0, 'volume': 0.8, 'emphasis': '?'},
+            'confused': {'rate': 155, 'pitch': 1.0, 'volume': 0.8, 'emphasis': '?'},
+            'tired': {'rate': 140, 'pitch': 0.9, 'volume': 0.7, 'emphasis': '...'},
+            'proud': {'rate': 170, 'pitch': 1.05, 'volume': 0.9, 'emphasis': '!'},
+            'love': {'rate': 155, 'pitch': 1.0, 'volume': 0.85, 'emphasis': ''},
+            'sarcastic': {'rate': 165, 'pitch': 0.95, 'volume': 0.85, 'emphasis': '...'},
+            'bored': {'rate': 145, 'pitch': 0.9, 'volume': 0.7, 'emphasis': '...'},
+            'surprised': {'rate': 180, 'pitch': 1.15, 'volume': 0.95, 'emphasis': '!'},
+            'grateful': {'rate': 160, 'pitch': 1.0, 'volume': 0.85, 'emphasis': ''},
+            'motivated': {'rate': 175, 'pitch': 1.1, 'volume': 0.9, 'emphasis': '!'},
+            'neutral': {'rate': 170, 'pitch': 1.0, 'volume': 0.85, 'emphasis': ''}
         }
     
     def _initialize_tts(self):
@@ -63,15 +63,25 @@ class TTSEngine:
             if engine:
                 voices = engine.getProperty('voices')
                 if voices:
-                    # Cache English voice
-                    for pref in config.TTS_GIRL_VOICE_PREFERENCES:
-                        for voice in voices:
-                            if pref in voice.name.lower() or pref in voice.id.lower():
+                    # Cache English voice - prefer en-US voices only
+                    for voice in voices:
+                        voice_lang = str(voice.languages).lower()
+                        voice_id = voice.id.lower()
+                        if 'en-us' in voice_lang or 'en_us' in voice_id or 'en-us' in voice_id:
+                            if any(pref in voice.name.lower() for pref in config.TTS_GIRL_VOICE_PREFERENCES):
                                 self._cached_voice_id_en = voice.id
-                                logger.info(f"Cached English voice: {voice.name}")
+                                logger.info(f"Cached English US voice: {voice.name}")
                                 break
-                        if self._cached_voice_id_en:
-                            break
+                    # Fallback: try preferences without language filter
+                    if not self._cached_voice_id_en:
+                        for pref in config.TTS_GIRL_VOICE_PREFERENCES:
+                            for voice in voices:
+                                if pref in voice.name.lower() or pref in voice.id.lower():
+                                    self._cached_voice_id_en = voice.id
+                                    logger.info(f"Cached English voice: {voice.name}")
+                                    break
+                            if self._cached_voice_id_en:
+                                break
                     if not self._cached_voice_id_en and voices:
                         self._cached_voice_id_en = voices[0].id
                     
@@ -124,24 +134,20 @@ class TTSEngine:
         profile = self._emotion_profiles.get(emotion, self._emotion_profiles['neutral'])
         emphasis = profile.get('emphasis', '')
         
-        # Add emotional pauses
+        # Add minimal emotional pauses - less is more natural
         if emotion == 'sad':
-            text = re.sub(r',\s+', ', ... ', text)
-            text = re.sub(r'\.\s+', '. ... ', text)
+            text = re.sub(r',\s+', ', ', text)
+            text = re.sub(r'\.\s+', '. ', text)
         elif emotion == 'excited':
-            text = re.sub(r'!', '!!! ', text)
+            text = re.sub(r'!', '! ', text)
         elif emotion == 'worried':
-            text = re.sub(r'\?\s+', '? ... ', text)
+            text = re.sub(r'\?\s+', '? ', text)
         elif emotion == 'confused':
-            text = re.sub(r'\?\s+', '? ... ', text)
+            text = re.sub(r'\?\s+', '? ', text)
         elif emotion == 'tired':
-            text = re.sub(r'\.\s+', '. ... ... ', text)
+            text = re.sub(r'\.\s+', '. ', text)
         elif emotion == 'sarcastic':
-            text = re.sub(r'\.\s+', '. ... ... ', text)
-        else:
-            text = re.sub(r',\s+', ', ... ', text)
-            text = re.sub(r'\.\s+', '. ... ', text)
-            text = re.sub(r'[!?]\s+', f'{emphasis} ... ', text)
+            text = re.sub(r'\.\s+', '. ', text)
         
         return text
     

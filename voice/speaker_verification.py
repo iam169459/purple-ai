@@ -23,7 +23,7 @@ class SpeakerVerification:
     def __init__(self, reference_file='data/my_voice_reference.wav'):
         self.reference_file = reference_file
         self.model = None
-        self.threshold = 0.08  # Very low threshold for better acceptance
+        self.threshold = 0.05  # Low threshold for better acceptance
         self._temp_files = []
 
     def initialize(self):

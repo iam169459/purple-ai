@@ -25,7 +25,7 @@
     "avg_quality": 0.75
   },
   "step_by_step": {
-    "attempts": 1,
+    "attempts": 8,
     "successes": 0,
     "avg_quality": 0.5
   }

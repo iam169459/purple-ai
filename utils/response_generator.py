@@ -25,12 +25,14 @@ class ResponseGenerator:
         
         self.name_patterns = [
             r'\bmy name is (\w+(?:\s+\w+)?)',
-            r'\bi am (\w+(?:\s+\w+)?)',
             r'\bcall me (\w+(?:\s+\w+)?)',
+            r'\bi am (\w+(?:\s+\w+)?)',
             r'\bi\'m (\w+(?:\s+\w+)?)',
             r'\bআমার নাম (\w+(?:\s+\w+)?)',
             r'\bআমি (\w+(?:\s+\w+)?)'
         ]
+        
+        self.question_starters = ['what', 'who', 'where', 'when', 'how', 'why']
         
         self.thanks_patterns = [
             r'\b(thank|thanks|thank you|thx|ty)\b',
@@ -518,23 +520,26 @@ class ResponseGenerator:
         # Get conversation context for better responses
         context = self._get_conversation_context(memory)
         
-        # Handle name setting with extra warmth
-        for pattern in self.name_patterns:
-            match = re.search(pattern, command_lower)
-            if match:
-                new_name = match.group(1).strip()
-                
-                skip_words = ['not', 'a', 'an', 'the', 'here', 'so', 'very', 'really']
-                name_parts = new_name.split()
-                if name_parts and name_parts[0].lower() in skip_words:
-                    if len(name_parts) > 1:
-                        new_name = ' '.join(name_parts[1:])
-                    else:
-                        continue
-                
-                if new_name and len(new_name) > 0:
-                    memory['user_name'] = new_name.capitalize()
-                    return self._generate_name_response(new_name.capitalize())
+        # Skip name detection for questions
+        first_word = command_lower.strip().split()[0] if command_lower.strip() else ''
+        if first_word not in self.question_starters:
+            # Handle name setting with extra warmth
+            for pattern in self.name_patterns:
+                match = re.search(pattern, command_lower)
+                if match:
+                    new_name = match.group(1).strip()
+                    
+                    skip_words = ['not', 'a', 'an', 'the', 'here', 'so', 'very', 'really', 'doing', 'right']
+                    name_parts = new_name.split()
+                    if name_parts and name_parts[0].lower() in skip_words:
+                        if len(name_parts) > 1:
+                            new_name = ' '.join(name_parts[1:])
+                        else:
+                            continue
+                    
+                    if new_name and len(new_name) > 0:
+                        memory['user_name'] = new_name.capitalize()
+                        return self._generate_name_response(new_name.capitalize())
         
         # Handle remembering information with friendly confirmation
         if 'remember' in command_lower and ('that' in command_lower or 'for me' in command_lower):

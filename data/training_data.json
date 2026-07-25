@@ -836,6 +836,225 @@
       ],
       "sentiment": "neutral",
       "response_quality": null
+    },
+    {
+      "user_input": "resume the music",
+      "ai_response": "I'm curious! What else?",
+      "timestamp": "2026-07-24T23:12:32.639753",
+      "context": {
+        "current_topic": null,
+        "recent_topics": [
+          "general",
+          "general",
+          "general",
+          "general"
+        ],
+        "conversation_flow": [],
+        "pending_question": null,
+        "awaiting_answer": false,
+        "last_interaction_quality": null
+      },
+      "topics": [
+        "general"
+      ],
+      "sentiment": "neutral",
+      "response_quality": null
+    },
+    {
+      "user_input": "Q: What made you think of that?",
+      "ai_response": "A: play music",
+      "timestamp": "2026-07-24T23:13:21.233210",
+      "context": {
+        "current_topic": null,
+        "recent_topics": [
+          "general",
+          "general",
+          "general",
+          "general"
+        ],
+        "conversation_flow": [],
+        "pending_question": null,
+        "awaiting_answer": false,
+        "last_interaction_quality": null
+      },
+      "topics": [
+        "general"
+      ],
+      "sentiment": "neutral",
+      "response_quality": null
+    },
+    {
+      "user_input": "who am i",
+      "ai_response": "Curiosity killed the cat, but satisfaction brought it back!",
+      "timestamp": "2026-07-24T23:14:10.306412",
+      "context": {
+        "current_topic": null,
+        "recent_topics": [
+          "general",
+          "general",
+          "general",
+          "general"
+        ],
+        "conversation_flow": [],
+        "pending_question": null,
+        "awaiting_answer": false,
+        "last_interaction_quality": null
+      },
+      "topics": [
+        "general"
+      ],
+      "sentiment": "neutral",
+      "response_quality": null
+    },
+    {
+      "user_input": "Q: What made you think of that?",
+      "ai_response": "A: tell a joke",
+      "timestamp": "2026-07-24T23:14:22.791525",
+      "context": {
+        "current_topic": null,
+        "recent_topics": [
+          "general",
+          "general",
+          "general",
+          "general"
+        ],
+        "conversation_flow": [],
+        "pending_question": null,
+        "awaiting_answer": false,
+        "last_interaction_quality": null
+      },
+      "topics": [
+        "general"
+      ],
+      "sentiment": "neutral",
+      "response_quality": null
+    },
+    {
+      "user_input": "what's in a screen",
+      "ai_response": "Well, aren't you the curious cat?",
+      "timestamp": "2026-07-24T23:14:35.393175",
+      "context": {
+        "current_topic": null,
+        "recent_topics": [
+          "general",
+          "general",
+          "general",
+          "general"
+        ],
+        "conversation_flow": [],
+        "pending_question": null,
+        "awaiting_answer": false,
+        "last_interaction_quality": null
+      },
+      "topics": [
+        "general"
+      ],
+      "sentiment": "neutral",
+      "response_quality": null
+    },
+    {
+      "user_input": "Q: I'd like to understand better. Can you elaborate?",
+      "ai_response": "A: switch to bangla language",
+      "timestamp": "2026-07-24T23:15:12.051244",
+      "context": {
+        "current_topic": null,
+        "recent_topics": [
+          "general",
+          "general",
+          "general",
+          "general"
+        ],
+        "conversation_flow": [],
+        "pending_question": null,
+        "awaiting_answer": false,
+        "last_interaction_quality": null
+      },
+      "topics": [
+        "general"
+      ],
+      "sentiment": "positive",
+      "response_quality": null
+    },
+    {
+      "user_input": "chrome",
+      "ai_response": "I'm intrigued! What else?",
+      "timestamp": "2026-07-24T23:15:36.217648",
+      "context": {
+        "current_topic": null,
+        "recent_topics": [
+          "general",
+          "general",
+          "general",
+          "general"
+        ],
+        "conversation_flow": [],
+        "pending_question": null,
+        "awaiting_answer": false,
+        "last_interaction_quality": null
+      },
+      "topics": [
+        "general"
+      ],
+      "sentiment": "neutral",
+      "response_quality": null
+    },
+    {
+      "user_input": "now listening for your voice command",
+      "ai_response": "That's fascinating! Keep going!",
+      "timestamp": "2026-07-24T23:25:38.475407",
+      "context": {
+        "current_topic": null,
+        "recent_topics": [
+          "general"
+        ],
+        "conversation_flow": [],
+        "pending_question": null,
+        "awaiting_answer": false,
+        "last_interaction_quality": null
+      },
+      "topics": [
+        "general"
+      ],
+      "sentiment": "neutral",
+      "response_quality": null
+    },
+    {
+      "user_input": "fascinating",
+      "ai_response": "That's fascinating! Keep going!",
+      "timestamp": "2026-07-24T23:25:50.135379",
+      "context": {
+        "current_topic": null,
+        "recent_topics": [
+          "general"
+        ],
+        "conversation_flow": [],
+        "pending_question": null,
+        "awaiting_answer": false,
+        "last_interaction_quality": null
+      },
+      "topics": [
+        "general"
+      ],
+      "sentiment": "neutral",
+      "response_quality": null
+    },
+    {
+      "user_input": "now listening for your voice command",
+      "ai_response": "Oh, I see! What else?",
+      "timestamp": "2026-07-25T00:20:04.741606",
+      "context": {
+        "current_topic": null,
+        "recent_topics": [],
+        "conversation_flow": [],
+        "pending_question": null,
+        "awaiting_answer": false,
+        "last_interaction_quality": null
+      },
+      "topics": [
+        "general"
+      ],
+      "sentiment": "neutral",
+      "response_quality": null
     }
   ],
   "patterns": {
@@ -899,9 +1118,11 @@
         "A: toraniya education",
         "A: other countries",
         "A: play the song",
-        "A: hello"
+        "A: hello",
+        "A: play music",
+        "A: tell a joke"
       ],
-      "count": 5
+      "count": 7
     },
     "having": {
       "responses": [
@@ -918,24 +1139,30 @@
     "think": {
       "responses": [
         "A: toraniya education",
-        "A: other countries"
+        "A: other countries",
+        "A: play music",
+        "A: tell a joke"
       ],
-      "count": 2
+      "count": 4
     },
     "that?": {
       "responses": [
         "A: toraniya education",
         "A: other countries",
-        "A: md rifat profile"
+        "A: md rifat profile",
+        "A: play music",
+        "A: tell a joke"
       ],
-      "count": 3
+      "count": 5
     },
     "made": {
       "responses": [
         "A: toraniya education",
-        "A: other countries"
+        "A: other countries",
+        "A: play music",
+        "A: tell a joke"
       ],
-      "count": 2
+      "count": 4
     },
     "debug": {
       "responses": [
@@ -1063,9 +1290,10 @@
     "music": {
       "responses": [
         "Tell me more! I'm enjoying this!",
-        "Let's keep chatting!"
+        "Let's keep chatting!",
+        "I'm curious! What else?"
       ],
-      "count": 2
+      "count": 3
     },
     "play": {
       "responses": [
@@ -1199,9 +1427,10 @@
     },
     "chrome": {
       "responses": [
-        "Interesting! Tell me more!"
+        "Interesting! Tell me more!",
+        "I'm intrigued! What else?"
       ],
-      "count": 1
+      "count": 2
     },
     "further?": {
       "responses": [
@@ -1224,9 +1453,11 @@
     "your": {
       "responses": [
         "Tell me more! I'm enjoying this!",
+        "Oh, I see! What else?",
+        "That's fascinating! Keep going!",
         "Oh, I see! What else?"
       ],
-      "count": 2
+      "count": 4
     },
     "recognise": {
       "responses": [
@@ -1243,9 +1474,11 @@
     "voice": {
       "responses": [
         "Tell me more! I'm enjoying this!",
+        "Oh, I see! What else?",
+        "That's fascinating! Keep going!",
         "Oh, I see! What else?"
       ],
-      "count": 2
+      "count": 4
     },
     "sorry": {
       "responses": [
@@ -1255,15 +1488,19 @@
     },
     "command": {
       "responses": [
+        "Oh, I see! What else?",
+        "That's fascinating! Keep going!",
         "Oh, I see! What else?"
       ],
-      "count": 1
+      "count": 3
     },
     "listening": {
       "responses": [
+        "Oh, I see! What else?",
+        "That's fascinating! Keep going!",
         "Oh, I see! What else?"
       ],
-      "count": 1
+      "count": 3
     },
     "that's": {
       "responses": [
@@ -1286,6 +1523,54 @@
     "improved?": {
       "responses": [
         "A: tell me more"
+      ],
+      "count": 1
+    },
+    "resume": {
+      "responses": [
+        "I'm curious! What else?"
+      ],
+      "count": 1
+    },
+    "what's": {
+      "responses": [
+        "Well, aren't you the curious cat?"
+      ],
+      "count": 1
+    },
+    "screen": {
+      "responses": [
+        "Well, aren't you the curious cat?"
+      ],
+      "count": 1
+    },
+    "understand": {
+      "responses": [
+        "A: switch to bangla language"
+      ],
+      "count": 1
+    },
+    "better.": {
+      "responses": [
+        "A: switch to bangla language"
+      ],
+      "count": 1
+    },
+    "like": {
+      "responses": [
+        "A: switch to bangla language"
+      ],
+      "count": 1
+    },
+    "elaborate?": {
+      "responses": [
+        "A: switch to bangla language"
+      ],
+      "count": 1
+    },
+    "fascinating": {
+      "responses": [
+        "That's fascinating! Keep going!"
       ],
       "count": 1
     }
@@ -1452,6 +1737,56 @@
           "input": "Q: How could this be improved?",
           "response": "A: tell me more",
           "timestamp": "2026-07-24T18:52:01.528723"
+        },
+        {
+          "input": "resume the music",
+          "response": "I'm curious! What else?",
+          "timestamp": "2026-07-24T23:12:32.639781"
+        },
+        {
+          "input": "Q: What made you think of that?",
+          "response": "A: play music",
+          "timestamp": "2026-07-24T23:13:21.233251"
+        },
+        {
+          "input": "who am i",
+          "response": "Curiosity killed the cat, but satisfaction brought it back!",
+          "timestamp": "2026-07-24T23:14:10.306434"
+        },
+        {
+          "input": "Q: What made you think of that?",
+          "response": "A: tell a joke",
+          "timestamp": "2026-07-24T23:14:22.791565"
+        },
+        {
+          "input": "what's in a screen",
+          "response": "Well, aren't you the curious cat?",
+          "timestamp": "2026-07-24T23:14:35.393200"
+        },
+        {
+          "input": "Q: I'd like to understand better. Can you elaborate?",
+          "response": "A: switch to bangla language",
+          "timestamp": "2026-07-24T23:15:12.051298"
+        },
+        {
+          "input": "chrome",
+          "response": "I'm intrigued! What else?",
+          "timestamp": "2026-07-24T23:15:36.217670"
+        },
+        {
+          "input": "now listening for your voice command",
+          "response": "That's fascinating! Keep going!",
+          "timestamp": "2026-07-24T23:25:38.475443"
+        },
+        {
+          "input": "fascinating",
+          "response": "That's fascinating! Keep going!",
+          "timestamp": "2026-07-24T23:25:50.135405"
+        },
+        {
+          "input": "now listening for your voice command",
+          "response": "Oh, I see! What else?",
+          "timestamp": "2026-07-25T00:20:04.741642"
         }
       ],
       "learned_facts": [],
@@ -1491,5 +1826,5 @@
     }
   },
   "conversation_flows": [],
-  "last_updated": "2026-07-24T18:52:01.528764"
+  "last_updated": "2026-07-25T00:20:04.741663"
 }

@@ -390,9 +390,9 @@ class SystemController:
     def open_file(self, filepath: str) -> Dict[str, Any]:
         try:
             filepath = os.path.expanduser(filepath)
-            if os_type == 'Darwin':
+            if self.os_type == 'Darwin':
                 subprocess.run(['open', filepath], timeout=10)
-            elif os_type == 'Windows':
+            elif self.os_type == 'Windows':
                 os.startfile(filepath)
             return {'success': True, 'message': f'Opened {filepath}'}
         except Exception as e:

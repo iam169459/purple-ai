@@ -3,8 +3,8 @@
   "learned": {
     "recent_session": {
       "first_seen": "2026-07-24T00:35:44.422406",
-      "count": 4,
-      "success_rate": 4,
+      "count": 12,
+      "success_rate": 12,
       "source": "interaction"
     },
     "sorry": {
@@ -27,14 +27,14 @@
     },
     "your": {
       "first_seen": "2026-07-24T17:40:42.522659",
-      "count": 2,
-      "success_rate": 2,
+      "count": 4,
+      "success_rate": 4,
       "source": "interaction"
     },
     "voice": {
       "first_seen": "2026-07-24T17:40:42.522660",
-      "count": 2,
-      "success_rate": 2,
+      "count": 4,
+      "success_rate": 4,
       "source": "interaction"
     },
     "sorry i": {
@@ -63,44 +63,44 @@
     },
     "your voice": {
       "first_seen": "2026-07-24T17:40:42.522665",
-      "count": 2,
-      "success_rate": 2,
+      "count": 4,
+      "success_rate": 4,
       "source": "interaction"
     },
     "listening": {
       "first_seen": "2026-07-24T18:51:24.055210",
-      "count": 1,
-      "success_rate": 1,
+      "count": 3,
+      "success_rate": 3,
       "source": "interaction"
     },
     "command": {
       "first_seen": "2026-07-24T18:51:24.055218",
-      "count": 1,
-      "success_rate": 1,
+      "count": 3,
+      "success_rate": 3,
       "source": "interaction"
     },
     "now listening": {
       "first_seen": "2026-07-24T18:51:24.055221",
-      "count": 1,
-      "success_rate": 1,
+      "count": 3,
+      "success_rate": 3,
       "source": "interaction"
     },
     "listening for": {
       "first_seen": "2026-07-24T18:51:24.055222",
-      "count": 1,
-      "success_rate": 1,
+      "count": 3,
+      "success_rate": 3,
       "source": "interaction"
     },
     "for your": {
       "first_seen": "2026-07-24T18:51:24.055224",
-      "count": 1,
-      "success_rate": 1,
+      "count": 3,
+      "success_rate": 3,
       "source": "interaction"
     },
     "voice command": {
       "first_seen": "2026-07-24T18:51:24.055226",
-      "count": 1,
-      "success_rate": 1,
+      "count": 3,
+      "success_rate": 3,
       "source": "interaction"
     },
     "that's": {
@@ -129,6 +129,84 @@
     },
     "really interesting": {
       "first_seen": "2026-07-24T18:51:48.986389",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "resume": {
+      "first_seen": "2026-07-24T23:12:32.641728",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "music": {
+      "first_seen": "2026-07-24T23:12:32.641733",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "resume the": {
+      "first_seen": "2026-07-24T23:12:32.641735",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "the music": {
+      "first_seen": "2026-07-24T23:12:32.641736",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "who am": {
+      "first_seen": "2026-07-24T23:14:10.307743",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "am i": {
+      "first_seen": "2026-07-24T23:14:10.307746",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "what's": {
+      "first_seen": "2026-07-24T23:14:35.394598",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "screen": {
+      "first_seen": "2026-07-24T23:14:35.394601",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "what's in": {
+      "first_seen": "2026-07-24T23:14:35.394603",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "in a": {
+      "first_seen": "2026-07-24T23:14:35.394605",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "a screen": {
+      "first_seen": "2026-07-24T23:14:35.394606",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "chrome": {
+      "first_seen": "2026-07-24T23:15:36.219098",
+      "count": 1,
+      "success_rate": 1,
+      "source": "interaction"
+    },
+    "fascinating": {
+      "first_seen": "2026-07-24T23:25:50.136762",
       "count": 1,
       "success_rate": 1,
       "source": "interaction"

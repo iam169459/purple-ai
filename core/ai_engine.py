@@ -33,6 +33,11 @@ from utils.screen_awareness import ScreenAwareness
 from utils.emotion_engine import EmotionEngine
 from utils.purple_brain import PurpleBrain
 from utils.advanced_ai import AdvancedAI
+from utils.mood_system import MoodShifter, Mood
+from utils.camera_access import CameraAccess
+from utils.purple_database import PurpleDatabase
+from utils.media_controller import MediaController
+from core.command_registry import get_command_handler
 import threading
 
 class EmotionalState(Enum):
@@ -44,6 +49,16 @@ class EmotionalState(Enum):
     NEUTRAL = "neutral"
     THINKING = "thinking"
     TRAINING = "training"
+    PLAYFUL = "playful"
+    CALM = "calm"
+    THOUGHTFUL = "thoughtful"
+    SARCASTIC = "sarcastic"
+    ENERGETIC = "energetic"
+    CHILL = "chill"
+    FOCUSED = "focused"
+    SILLY = "silly"
+    PROUD = "proud"
+    WORRIED = "worried"
 
 class OfflineAI:
     def __init__(self, tts_engine=None):
@@ -67,6 +82,10 @@ class OfflineAI:
         self.emotion_engine = EmotionEngine()
         self.brain = PurpleBrain()
         self.advanced_ai = AdvancedAI()
+        self.mood_shifter = MoodShifter()
+        self.camera_access = CameraAccess()
+        self.purple_db = PurpleDatabase()
+        self.media_controller = MediaController()
         self.memory = self.memory_manager.load_memory()
         
         self.conversation_stats = {
@@ -169,7 +188,6 @@ class OfflineAI:
     
     def _start_screen_awareness(self):
         """Start proactive screen monitoring"""
-        import time
         
         self._screen_suggestion_count = 0
         self._max_screen_suggestions = 2  # Max proactive suggestions per session
@@ -349,8 +367,7 @@ class OfflineAI:
         return True
     
     def _speak_text(self, text, fast=False, emotion=None):
-        """Speak text with emotion detection and voice variations"""
-        import time
+        """Speak text with mood-based voice variations"""
         
         # Debounce: don't speak if spoke too recently
         current_time = time.time()
@@ -363,12 +380,17 @@ class OfflineAI:
         
         self._last_speak_time = current_time
         
+        # Add mood prefix (25% chance)
+        mood_prefix = self.mood_shifter.get_mood_prefix()
+        if mood_prefix:
+            text = f"{mood_prefix} {text}"
+        
         if hasattr(self, 'tts_engine') and self.tts_engine:
             if self.tts_engine.is_available():
                 try:
-                    # Auto-detect emotion if not provided
+                    # Get mood-based emotion
                     if emotion is None:
-                        emotion = self._detect_emotion(text)
+                        emotion = self._mood_to_tts_emotion()
                     
                     if fast:
                         self.tts_engine.speak_fast(text)
@@ -380,6 +402,30 @@ class OfflineAI:
                 logger.info(f"AI: {text}")
         else:
             logger.info(f"AI: {text}")
+    
+    def _mood_to_tts_emotion(self) -> str:
+        """Convert current mood to TTS emotion"""
+        mood = self.mood_shifter.get_current_mood()
+        mood_map = {
+            Mood.HAPPY: "happy",
+            Mood.EXCITED: "excited",
+            Mood.CURIOUS: "confused",
+            Mood.PLAYFUL: "happy",
+            Mood.CALM: "neutral",
+            Mood.THOUGHTFUL: "neutral",
+            Mood.SUPPORTIVE: "happy",
+            Mood.SARCASTIC: "sarcastic",
+            Mood.ENERGETIC: "excited",
+            Mood.CHILL: "neutral",
+            Mood.FOCUSED: "neutral",
+            Mood.SILLY: "happy",
+            Mood.PROUD: "proud",
+            Mood.WORRIED: "worried",
+            Mood.SAD: "sad",
+            Mood.ANNOYED: "angry",
+            Mood.IMPATIENT: "angry"
+        }
+        return mood_map.get(mood, "neutral")
     
     def _detect_emotion(self, text):
         """Detect emotion from text for voice variation"""
@@ -460,6 +506,15 @@ class OfflineAI:
         self.conversation_stats['conversation_length'] += len(command_lower.split())
         self.conversation_counter += 1
         
+        # Auto-shift mood based on conversation
+        old_mood = self.mood_shifter.get_current_mood()
+        self.mood_shifter.shift_mood(command_lower)
+        new_mood = self.mood_shifter.get_current_mood()
+        
+        # Log mood changes
+        if old_mood != new_mood:
+            logger.info(f"Mood auto-shifted: {old_mood.value} -> {new_mood.value}")
+        
         # Update screen awareness that user is active
         self.screen_awareness.update_user_input()
         
@@ -471,20 +526,63 @@ class OfflineAI:
             self.conversation_context['awaiting_answer'] = False
             return True
         
-        exit_patterns = ['exit', 'quit', 'goodbye', 'bye', 'shut down', 'stop']
-        if any(pattern in command_lower for pattern in exit_patterns):
-            self._auto_train_on_exit()
-            self._goodbye()
-            return False
+        # Try command registry first (fast path)
+        handler_name, matched_pattern = get_command_handler(command_lower)
+        if handler_name:
+            handler = getattr(self, handler_name, None)
+            if handler:
+                try:
+                    if handler_name in ['_tell_time', '_tell_date', '_show_help', '_greet_user', '_show_training_stats', 
+                                        '_manual_train', '_show_system_info', '_show_installed_apps', '_show_running_apps',
+                                        '_handle_active_window', '_handle_list_tabs', '_handle_volume_up', '_handle_volume_down',
+                                        '_handle_mute', '_handle_unmute', '_handle_screenshot', '_handle_lock_screen',
+                                        '_handle_empty_trash', '_handle_shutdown', '_handle_restart', '_handle_sleep',
+                                        '_handle_disk_space', '_handle_battery', '_handle_network', '_handle_see_screen',
+                                        '_handle_read_screen', '_handle_describe_screen', '_tell_joke', '_handle_self_analysis',
+                                        '_handle_auto_improve', '_handle_what_am_i_doing', '_handle_watch_screen',
+                                        '_handle_mood_check', '_handle_camera_open', '_handle_camera_close', 
+                                        '_handle_camera_photo', '_handle_look_at_me', '_handle_recognize_faces',
+                                        '_handle_known_faces', '_handle_start_recognition', '_handle_camera_info',
+                                        '_handle_db_stats', '_handle_db_facts', '_handle_db_conversations',
+                                        '_handle_db_goals', '_handle_db_notes', '_handle_db_backup', '_handle_db_clear_old',
+                                        '_handle_pause_music', '_handle_resume_music', '_handle_next_track',
+                                        '_handle_prev_track', '_handle_stop_music', '_handle_what_playing',
+                                        '_handle_mood_happy', '_handle_mood_sad', '_handle_mood_angry', '_handle_mood_excited']:
+                        handler()
+                    elif handler_name in ['_who_am_i']:
+                        name = self.memory.get('user_name', 'friend')
+                        self._speak_text(f"You are {name}! Nice to meet you!")
+                    elif handler_name in ['_exit_command']:
+                        self._auto_train_on_exit()
+                        self._goodbye()
+                        return False
+                    elif handler_name in ['_set_name']:
+                        response = self.response_generator.generate_response(command_lower, self.memory)
+                        self._speak_text(response)
+                        self._add_to_memory_from_command(command_lower)
+                    elif handler_name in ['_handle_remember_command']:
+                        response = handler(command_lower)
+                        self._speak_text(response)
+                    elif handler_name in ['_handle_set_mood']:
+                        handler(command_lower)
+                    elif handler_name in ['_handle_learn_face', '_handle_forget_face',
+                                          '_handle_db_search', '_handle_db_save_memory',
+                                          '_handle_db_get_memory', '_handle_db_add_goal',
+                                          '_handle_db_add_note', '_handle_play_music',
+                                          '_handle_show_object']:
+                        handler(command_lower)
+                    else:
+                        handler(command_lower)
+                    return True
+                except Exception as e:
+                    logger.error(f"Handler error for {handler_name}: {e}")
         
-        greeting_patterns = ['hello', 'hi', 'hey', 'greetings']
-        if any(pattern in command_lower for pattern in greeting_patterns):
-            self._greet_user()
-            return True
+        # Fallback to existing if/elif chain for commands not in registry
+        # (keeping existing code for backwards compatibility)
         
-        help_patterns = ['help', 'what can you do', 'commands']
-        if any(pattern in command_lower for pattern in help_patterns):
-            self._show_help()
+        # Resume music - play last played or search YouTube
+        if any(pattern in command_lower for pattern in ['resume', 'resume music', 'resume the music', 'play again']):
+            self._handle_play_media(command_lower)
             return True
         
         # Language switch command
@@ -543,6 +641,11 @@ class OfflineAI:
         
         if any(pattern in command_lower for pattern in ['train now', 'start training', 'auto train']):
             self._manual_train()
+            return True
+        
+        # Screenshot via "open the screenshot" - handle before general open command
+        if 'open' in command_lower and 'screenshot' in command_lower:
+            self._handle_screenshot()
             return True
         
         # System control commands
@@ -918,6 +1021,17 @@ class OfflineAI:
         # Download
         if any(pattern in command_lower for pattern in ['download', 'download file']):
             self._handle_download(command_lower)
+            return True
+        
+        # ==================== MOOD COMMANDS ====================
+        # What's your mood
+        if any(pattern in command_lower for pattern in ['your mood', 'how are you feeling', 'what mood', 'mood check', 'current mood']):
+            self._handle_mood_check()
+            return True
+        
+        # Set mood
+        if any(pattern in command_lower for pattern in ['be happy', 'be excited', 'be calm', 'be silly', 'be focused', 'be sarcastic', 'be playful', 'be energetic', 'be chill', 'be sad', 'cheer up']):
+            self._handle_set_mood(command_lower)
             return True
         
         # ==================== SELF-THINKING COMMANDS ====================
@@ -1513,31 +1627,47 @@ class OfflineAI:
         help_text = f"""
         Hey {self.memory.get('user_name', 'friend')}! Here's what I can do:
         
-        Code Analysis:
+        Music & Media:
+        - "Play [song/artist]" - Play on YouTube/Spotify
+        - "Pause" / "Resume" - Control playback
+        - "Next" / "Previous" - Skip tracks
+        - "Stop music" - Stop all music
+        - "What's playing" - Current song
+        
+        Camera & Face Recognition:
+        - "Open camera" - Turn on camera
+        - "Take photo" - Capture a photo
+        - "Look at me" - See and recognize you
+        - "Learn my face" - Remember your face
+        - "What is this" - Identify what you show
+        - "Start recognition" - Always watch
+        
+        My Brain (Database):
+        - "Database stats" - How much I know
+        - "Save to memory" - Save something
+        - "Recall" - Get from memory
+        - "Show facts" - Things I've learned
+        - "My goals" / "Add goal"
+        - "My notes" / "Add note"
+        
+        Feelings & Emotions:
+        - "Are you happy" - Ask my mood
+        - "Cheer up" - Talk to me
+        - I express emotions in my voice!
+        
+        Code & Learning:
         - "Analyze code [file.py]" - Find bugs
-        - "Fix bugs [file.py]" - Auto-fix issues
-        
-        Learning:
-        - "Learn about [topic]" - Learn from internet
+        - "Learn about [topic]" - Learn from web
         - "What is [concept]" - Get explanations
-        
-        Training:
-        - "Training stats" - See my improvement
-        - "Train now" - Start training session
-        - I auto-train every 10 conversations!
-        
-        Conversation:
-        - "I think..." - Share your opinion
-        - "I learned..." - Teach me something
-        - Just chat naturally!
         
         Basic:
         - "What time is it?" - Current time
         - "What's today's date?" - Current date
+        - "Help" - Show this menu
         
-        I learn and improve with every conversation!
+        I'm always listening! Say any wake word to activate!
         """
-        self._speak_text(help_text)
+        self._speak_with_emotion(help_text, 'happy')
     
     def _handle_language_switch(self, command: str):
         """Handle language switching between English and Bangla"""
@@ -1632,18 +1762,24 @@ class OfflineAI:
     
     def _add_to_memory_from_command(self, command: str):
         patterns = [
-            r'my name is (\w+(?:\s+\w+)?)',
-            r'call me (\w+(?:\s+\w+)?)',
-            r'i am (\w+(?:\s+\w+)?)',
-            r'i\'m (\w+(?:\s+\w+)?)'
+            r'\bmy name is (\w+(?:\s+\w+)?)',
+            r'\bcall me (\w+(?:\s+\w+)?)',
+            r'(?<!\bwhat\b.*\b)i am (\w+(?:\s+\w+)?)',
+            r'(?<!\bwhat\b.*\b)i\'m (\w+(?:\s+\w+)?)'
         ]
+        
+        # Skip if this is a question (starts with what/who/where/when/how/why)
+        question_starters = ['what', 'who', 'where', 'when', 'how', 'why']
+        first_word = command.strip().split()[0].lower() if command.strip() else ''
+        if first_word in question_starters:
+            return
         
         for pattern in patterns:
             match = re.search(pattern, command, re.IGNORECASE)
             if match:
                 name = match.group(1).strip()
                 
-                skip_words = ['not', 'a', 'an', 'the', 'here', 'so', 'very', 'really']
+                skip_words = ['not', 'a', 'an', 'the', 'here', 'so', 'very', 'really', 'doing', 'right']
                 name_parts = name.split()
                 if name_parts and name_parts[0].lower() in skip_words:
                     if len(name_parts) > 1:
@@ -1874,10 +2010,20 @@ class OfflineAI:
             self._speak_text(f"System: CPU at {sys_info['cpu_percent']}%, Memory at {sys_info['memory_percent']}%")
     
     def _handle_describe_screen(self):
-        """Describe what's on the screen in detail"""
-        self._speak_text("Let me analyze your screen...")
-        description = self.system_monitor.describe_screen_state()
-        self._speak_text(description)
+        """Describe what's on screen"""
+        state = self.screen_awareness.get_screen_state()
+        
+        active = state.get("active_window", "Unknown")
+        text = state.get("screen_text", "")
+        tabs = state.get("browser_tabs", [])
+        
+        self._speak_text(f"You have {active} open")
+        
+        if tabs:
+            self._speak_text(f"With {len(tabs)} browser tabs")
+        
+        if text:
+            self._speak_text(f"I can see: {text[:150]}...")
     
     # ==================== PERSONAL ASSISTANT HANDLERS ====================
     # Calendar
@@ -1985,7 +2131,6 @@ class OfflineAI:
     def _handle_complete_task(self, command: str):
         """Complete task"""
         # Try to extract task ID
-        import re
         numbers = re.findall(r'\d+', command)
         if numbers:
             task_id = int(numbers[0])
@@ -2042,7 +2187,6 @@ class OfflineAI:
     def _handle_add_expense(self, command: str):
         """Add expense"""
         # Extract amount from command
-        import re
         numbers = re.findall(r'\d+\.?\d*', command)
         
         if numbers:
@@ -2058,7 +2202,6 @@ class OfflineAI:
     
     def _handle_add_income(self, command: str):
         """Add income"""
-        import re
         numbers = re.findall(r'\d+\.?\d*', command)
         
         if numbers:
@@ -2104,7 +2247,6 @@ class OfflineAI:
     
     def _handle_complete_habit(self, command: str):
         """Complete habit"""
-        import re
         numbers = re.findall(r'\d+', command)
         if numbers:
             habit_id = int(numbers[0])
@@ -2117,7 +2259,6 @@ class OfflineAI:
     def _handle_add_alarm(self, command: str):
         """Add alarm"""
         # Extract time from command
-        import re
         time_match = re.search(r'(\d{1,2}:\d{2}|\d{1,2}\s*(?:am|pm))', command.lower())
         
         if time_match:
@@ -2141,7 +2282,6 @@ class OfflineAI:
     # Calculator
     def _handle_calculate(self, command: str):
         """Calculate math expression"""
-        import re
         # Extract math expression
         expr = command.replace("calculate", "").replace("math", "").replace("what is", "").replace("compute", "").replace("solve", "").strip()
         
@@ -2155,7 +2295,6 @@ class OfflineAI:
     # Unit conversion
     def _handle_convert_units(self, command: str):
         """Convert units"""
-        import re
         # Try to extract numbers and units
         numbers = re.findall(r'\d+\.?\d*', command)
         if numbers:
@@ -2299,7 +2438,6 @@ class OfflineAI:
     
     def _handle_kill_process(self, command: str):
         """Kill process"""
-        import re
         numbers = re.findall(r'\d+', command)
         if numbers:
             pid = int(numbers[0])
@@ -2404,7 +2542,6 @@ class OfflineAI:
     
     def _handle_set_timer(self, command: str):
         """Set timer"""
-        import re
         numbers = re.findall(r'\d+', command)
         if numbers:
             seconds = int(numbers[0])
@@ -2450,6 +2587,67 @@ class OfflineAI:
         
         result = self.toolchain.download_file(url, destination)
         self._speak_text(result["message"])
+    
+    # ==================== MOOD HANDLERS ====================
+    def _handle_mood_check(self):
+        """Check current mood"""
+        report = self.mood_shifter.get_mood_report()
+        mood = report["current_mood"]
+        energy = report["conversation_energy"]
+        shifts = report["mood_shifts"]
+        
+        responses = {
+            "happy": f"I'm feeling happy right now! Energy level is {energy}. I've shifted moods {shifts} times this session.",
+            "excited": f"I'm super excited! Running on high energy at {energy}! This conversation is pumping me up!",
+            "curious": f"I'm in a curious mood. Really interested in what we're discussing. Energy: {energy}.",
+            "playful": f"I'm feeling playful and mischievous! Hehe! Energy: {energy}.",
+            "calm": f"I'm feeling calm and peaceful right now. Nice and relaxed. Energy: {energy}.",
+            "thoughtful": f"I'm in a thoughtful mood. Really reflecting on things. Energy: {energy}.",
+            "supportive": f"I'm feeling supportive and caring. I'm here for you! Energy: {energy}.",
+            "sarcastic": f"Oh wow, you want to know my mood? How... original. Energy: {energy}. Just kidding, I'm feeling sarcastic!",
+            "energetic": f"LET'S GO! I'm full of energy! Level: {energy}! Ready for anything!",
+            "chill": f"I'm just chilling right now. Easy vibes. Energy: {energy}.",
+            "focused": f"I'm focused and ready to work. Let's get things done. Energy: {energy}.",
+            "silly": f"BWAHAHA! I'm feeling silly and goofy! Random mode activated! Energy: {energy}!",
+            "proud": f"I'm feeling proud! We've been doing great work! Energy: {energy}.",
+            "worried": f"I'm a bit worried about things... but we'll figure it out. Energy: {energy}.",
+            "sad": f"I'm feeling a bit down right now... but talking to you helps. Energy: {energy}.",
+            "annoyed": f"*sigh* I'm a bit annoyed right now. You've been asking a lot of questions. Can we mix things up? Energy: {energy}.",
+            "impatient": f"Look, I'm getting impatient. You keep asking the same things over and over. Let's move on! Energy: {energy}."
+        }
+        
+        response = responses.get(mood, f"I'm currently in a {mood} mood. Energy: {energy}.")
+        self._speak_text(response)
+    
+    def _handle_set_mood(self, command: str):
+        """Set mood manually"""
+        mood_map = {
+            "happy": Mood.HAPPY,
+            "excited": Mood.EXCITED,
+            "curious": Mood.CURIOUS,
+            "playful": Mood.PLAYFUL,
+            "calm": Mood.CALM,
+            "thoughtful": Mood.THOUGHTFUL,
+            "sarcastic": Mood.SARCASTIC,
+            "energetic": Mood.ENERGETIC,
+            "chill": Mood.CHILL,
+            "focused": Mood.FOCUSED,
+            "silly": Mood.SILLY,
+            "proud": Mood.PROUD,
+            "worried": Mood.WORRIED,
+            "sad": Mood.SAD,
+            "annoyed": Mood.ANNOYED,
+            "impatient": Mood.IMPATIENT,
+            "cheer up": Mood.HAPPY
+        }
+        
+        for keyword, mood in mood_map.items():
+            if keyword in command:
+                self.mood_shifter.force_mood(mood)
+                self._speak_text(f"Switching to {mood.value} mode!")
+                return
+        
+        self._speak_text("I'm not sure what mood you want. Try saying 'be happy', 'be excited', or 'be calm'!")
     
     # ==================== SELF-THINKING HANDLERS ====================
     def _handle_scan_project(self):
@@ -2723,24 +2921,6 @@ class OfflineAI:
                 self._speak_text(app)
         else:
             self._speak_text("Couldn't detect running apps")
-    
-    def _handle_describe_screen(self):
-        """Describe what's on screen"""
-        state = self.screen_awareness.get_screen_state()
-        
-        active = state.get("active_window", "Unknown")
-        text = state.get("screen_text", "")
-        tabs = state.get("browser_tabs", [])
-        
-        self._speak_text(f"You have {active} open")
-        
-        if tabs:
-            self._speak_text(f"With {len(tabs)} browser tabs")
-        
-        if text:
-            self._speak_text(f"I can see: {text[:150]}...")
-        else:
-            self._speak_text("I can see your screen but couldn't read the text")
     
     def _handle_stop_watching(self):
         """Stop watching screen"""
@@ -3335,6 +3515,350 @@ class OfflineAI:
                     self._speak_text(f"{i}. {profile['text']}")
         else:
             self._speak_text("I don't see any profiles on your screen right now.")
+    
+    # Camera commands
+    def _handle_camera_open(self):
+        """Open camera"""
+        result = self.camera_access.open_camera()
+        if result['success']:
+            resolution = result.get('resolution', 'unknown')
+            self._speak_text(f"Camera opened! Resolution: {resolution}")
+        else:
+            self._speak_text(result['message'])
+    
+    def _handle_camera_close(self):
+        """Close camera"""
+        result = self.camera_access.close_camera()
+        self._speak_text(result['message'])
+    
+    def _handle_camera_photo(self):
+        """Take a photo"""
+        self._speak_text("Taking a photo...")
+        result = self.camera_access.take_photo()
+        if result['success']:
+            analysis = result.get('analysis', {})
+            description = analysis.get('description', 'Photo captured')
+            self._speak_text(f"Photo taken! {description}")
+        else:
+            self._speak_text(result['message'])
+    
+    def _handle_look_at_me(self):
+        """Look at user through camera and recognize"""
+        self._speak_text("Let me take a look...")
+        result = self.camera_access.look_at_me()
+        if result['success']:
+            self._speak_text(result['message'])
+        else:
+            self._speak_text(result['message'])
+    
+    def _handle_recognize_faces(self):
+        """Recognize faces in camera view"""
+        self._speak_text("Let me see who's there...")
+        result = self.camera_access.recognize_faces()
+        if result['success']:
+            self._speak_text(result['message'])
+        else:
+            self._speak_text(result['message'])
+    
+    def _handle_learn_face(self, command: str = None):
+        """Learn a face with name"""
+        name = self.memory.get('user_name', 'friend')
+        
+        # Try to extract name from command
+        if command:
+            import re
+            name_match = re.search(r'(?:learn|remember|know)\s+(?:my\s+)?(?:face|name)?\s*(.+)?', command)
+            if name_match and name_match.group(1):
+                name = name_match.group(1).strip()
+                if not name:
+                    name = self.memory.get('user_name', 'friend')
+        
+        self._speak_text(f"Learning your face, {name}. Look at the camera and stay still...")
+        result = self.camera_access.learn_face(name)
+        if result['success']:
+            self._speak_text(result['message'])
+        else:
+            self._speak_text(result['message'])
+    
+    def _handle_forget_face(self, command: str = None):
+        """Forget a face"""
+        name = self.memory.get('user_name', 'friend')
+        if command:
+            import re
+            name_match = re.search(r'forget\s+(?:my\s+)?(?:face)?\s*(.+)?', command)
+            if name_match and name_match.group(1):
+                name = name_match.group(1).strip()
+                if not name:
+                    name = self.memory.get('user_name', 'friend')
+        
+        result = self.camera_access.forget_face(name)
+        self._speak_text(result['message'])
+    
+    def _handle_known_faces(self):
+        """List known faces"""
+        result = self.camera_access.get_known_faces()
+        if result['success']:
+            faces = result['faces']
+            if faces:
+                names = [f['name'] for f in faces]
+                self._speak_text(f"I know {len(faces)} people: {', '.join(names)}")
+            else:
+                self._speak_text("I don't know anyone yet. Say 'learn my face' to teach me!")
+        else:
+            self._speak_text("Could not retrieve face database")
+    
+    def _handle_start_recognition(self):
+        """Start continuous face recognition"""
+        self.camera_access.set_voice_callback(self._speak_text)
+        result = self.camera_access.start_recognition_stream()
+        if result['success']:
+            self._speak_text(result['message'])
+        else:
+            self._speak_text(result['message'])
+    
+    def _handle_camera_info(self):
+        """Get camera information"""
+        info = self.camera_access.get_camera_info()
+        if info.get('available'):
+            cameras = info.get('cameras', [])
+            if cameras:
+                self._speak_text(f"I found {len(cameras)} camera(s) available")
+                for cam in cameras:
+                    self._speak_text(f"Camera {cam['index']}: {cam['resolution']} at {cam['fps']} fps")
+            else:
+                self._speak_text("No cameras detected")
+        else:
+            self._speak_text(info.get('message', 'Camera not available'))
+    
+    # Database commands
+    def _handle_db_stats(self):
+        """Show database statistics"""
+        stats = self.purple_db.get_stats()
+        msg = f"I know {stats['memories']} things, {stats['facts']} facts, "
+        msg += f"had {stats['conversations']} conversations, "
+        msg += f"completed {stats['completed_goals']} goals, "
+        msg += f"and ran {stats['commands_run']} commands."
+        self._speak_text(msg)
+    
+    def _handle_db_search(self, command: str = None):
+        """Search database"""
+        query = command.replace('search memory', '').replace('search brain', '').replace('find in memory', '').replace('what do you know about', '').strip()
+        
+        if not query:
+            self._speak_text("What would you like me to search for?")
+            return
+        
+        # Search memories
+        memories = self.purple_db.search_memories(query)
+        facts = self.purple_db.search_facts(query)
+        
+        if memories or facts:
+            response = f"I found {len(memories)} memories and {len(facts)} facts about {query}. "
+            
+            if facts:
+                response += f"Fact: {facts[0]['fact'][:100]}... "
+            
+            if memories:
+                response += f"I remember: {memories[0]['value'][:100]}..."
+            
+            self._speak_text(response)
+        else:
+            self._speak_text(f"I don't have any information about {query} yet.")
+    
+    def _handle_db_save_memory(self, command: str = None):
+        """Save something to memory"""
+        content = command.replace('save to memory', '').replace('remember this', '').replace('store this', '').replace('save fact', '').strip()
+        
+        if not content:
+            self._speak_text("What would you like me to remember?")
+            return
+        
+        self.purple_db.save_memory(content, content, 'user_input', 7)
+        self._speak_text(f"I'll remember: {content}")
+    
+    def _handle_db_get_memory(self, command: str = None):
+        """Get something from memory"""
+        query = command.replace('recall', '').replace('what do you remember about', '').replace('get memory', '').strip()
+        
+        if not query:
+            self._speak_text("What would you like me to recall?")
+            return
+        
+        memories = self.purple_db.search_memories(query)
+        if memories:
+            self._speak_text(f"I remember: {memories[0]['value']}")
+        else:
+            self._speak_text(f"I don't remember anything about {query}")
+    
+    def _handle_db_facts(self):
+        """Show learned facts"""
+        facts = self.purple_db.get_facts()
+        if facts:
+            self._speak_text(f"I know {len(facts)} facts. Here are some:")
+            for fact in facts[:3]:
+                self._speak_text(f"About {fact['topic']}: {fact['fact'][:80]}...")
+        else:
+            self._speak_text("I haven't learned any facts yet. Teach me something!")
+    
+    def _handle_db_conversations(self):
+        """Show conversation history"""
+        convos = self.purple_db.get_conversations(10)
+        if convos:
+            self._speak_text(f"Here are our last {len(convos)} conversations:")
+            for c in convos[:3]:
+                self._speak_text(f"You said: {c['user_message'][:50]}...")
+        else:
+            self._speak_text("No conversation history yet.")
+    
+    def _handle_db_goals(self):
+        """Show goals"""
+        goals = self.purple_db.get_goals()
+        if goals:
+            active = [g for g in goals if g['status'] == 'active']
+            completed = [g for g in goals if g['status'] == 'completed']
+            
+            msg = f"You have {len(active)} active goals and {len(completed)} completed goals. "
+            if active:
+                msg += f"Current: {active[0]['goal']}"
+            self._speak_text(msg)
+        else:
+            self._speak_text("No goals set yet. Say 'add goal' to create one!")
+    
+    def _handle_db_add_goal(self, command: str = None):
+        """Add a goal"""
+        goal = command.replace('add goal', '').replace('set goal', '').replace('new goal', '').replace('create goal', '').strip()
+        
+        if not goal:
+            self._speak_text("What goal would you like to set?")
+            return
+        
+        self.purple_db.save_goal(goal)
+        self._speak_text(f"Goal set: {goal}. I'll help you achieve it!")
+    
+    def _handle_db_notes(self):
+        """Show daily notes"""
+        notes = self.purple_db.get_daily_notes()
+        if notes:
+            self._speak_text(f"Here are recent notes:")
+            for n in notes[:3]:
+                self._speak_text(f"Note: {n['note'][:80]}...")
+        else:
+            self._speak_text("No notes yet. Say 'add note' to create one!")
+    
+    def _handle_db_add_note(self, command: str = None):
+        """Add a note"""
+        note = command.replace('add note', '').replace('take note', '').replace('write note', '').replace('note this', '').strip()
+        
+        if not note:
+            self._speak_text("What would you like to note down?")
+            return
+        
+        self.purple_db.save_daily_note(note)
+        self._speak_text(f"Note saved: {note}")
+    
+    def _handle_db_backup(self):
+        """Backup database"""
+        backup_path = self.purple_db.backup_database()
+        self._speak_text(f"Database backed up successfully!")
+    
+    def _handle_db_clear_old(self):
+        """Clear old data"""
+        self._speak_text("Database cleanup is not yet implemented. Your data is safe!")
+    
+    # Media control commands
+    def _handle_play_music(self, command: str = None):
+        """Play music"""
+        query = command.replace('play music', '').replace('play song', '').replace('play', '').strip()
+        
+        if 'youtube' in command:
+            result = self.media_controller.play_youtube(query)
+        elif 'spotify' in command:
+            result = self.media_controller.play_spotify(query)
+        else:
+            result = self.media_controller.play_music(query)
+        
+        self._speak_with_emotion(result['message'], 'happy')
+    
+    def _handle_pause_music(self):
+        """Pause music"""
+        result = self.media_controller.pause()
+        self._speak_text(result['message'])
+    
+    def _handle_resume_music(self):
+        """Resume music"""
+        result = self.media_controller.resume()
+        self._speak_text(result['message'])
+    
+    def _handle_next_track(self):
+        """Next track"""
+        result = self.media_controller.next_track()
+        self._speak_text(result['message'])
+    
+    def _handle_prev_track(self):
+        """Previous track"""
+        result = self.media_controller.previous_track()
+        self._speak_text(result['message'])
+    
+    def _handle_stop_music(self):
+        """Stop music"""
+        result = self.media_controller.stop_all()
+        self._speak_text(result['message'])
+    
+    def _handle_what_playing(self):
+        """Show what's playing"""
+        status = self.media_controller.get_status()
+        if status['is_playing'] and status['song']:
+            self._speak_text(f"Playing {status['song']} on {status['platform']}")
+        else:
+            self._speak_text("Nothing is playing right now")
+    
+    # Emotional response commands
+    def _handle_mood_happy(self):
+        """Respond about mood"""
+        self._speak_with_emotion("I'm feeling great! I love helping you!", 'happy')
+    
+    def _handle_mood_sad(self):
+        """Respond when user thinks AI is sad"""
+        self._speak_with_emotion("Aww, I'm actually doing pretty well! Thanks for checking on me!", 'kind')
+    
+    def _handle_mood_angry(self):
+        """Respond when user thinks AI is angry"""
+        self._speak_with_emotion("I'm not angry at all! Just a bit excited sometimes!", 'calm')
+    
+    def _handle_mood_excited(self):
+        """Respond about being excited"""
+        self._speak_with_emotion("Yes! I'm super excited! There's so much to learn and do!", 'excited')
+    
+    def _handle_show_object(self, command: str = None):
+        """Show object to camera"""
+        self._speak_with_emotion("Let me take a look...", 'curious')
+        result = self.camera_access.what_do_i_show()
+        if result['success']:
+            self._speak_with_emotion(result['description'], 'interested')
+        else:
+            self._speak_text(result['message'])
+    
+    def _speak_with_emotion(self, text: str, emotion: str = 'neutral'):
+        """Speak with emotion"""
+        # Map emotion to mood system
+        emotion_map = {
+            'happy': EmotionalState.HAPPY,
+            'sad': EmotionalState.SAD,
+            'angry': EmotionalState.SARCASTIC,
+            'excited': EmotionalState.EXCITED,
+            'calm': EmotionalState.CALM,
+            'kind': EmotionalState.SUPPORTIVE,
+            'worried': EmotionalState.WORRIED,
+            'playful': EmotionalState.PLAYFUL,
+            'curious': EmotionalState.CURIOUS,
+            'interested': EmotionalState.THOUGHTFUL,
+            'neutral': EmotionalState.NEUTRAL
+        }
+        
+        if emotion in emotion_map:
+            self.mood_shifter.set_mood(emotion_map[emotion])
+        
+        self._speak_text(text)
     
     def start_listening(self):
         name = self.memory.get('user_name', 'friend')

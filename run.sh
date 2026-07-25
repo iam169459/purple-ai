@@ -142,17 +142,52 @@ main() {
             diagnose
             exit 0
             ;;
+        background|bg)
+            echo "Starting Purple AI in background mode..."
+            setup_venv
+            activate_venv
+            cd "$PROJECT_DIR"
+            nohup $PYTHON "$MAIN_SCRIPT" > logs/purple_ai.log 2>&1 &
+            echo $! > "$PID_FILE"
+            echo "Purple AI started in background (PID: $!)"
+            echo "Log: logs/purple_ai.log"
+            echo "Use './run.sh stop' to stop"
+            exit 0
+            ;;
+        service)
+            exec "$PROJECT_DIR/purple_service.sh" "${@:2}"
+            exit 0
+            ;;
+        wake-words|wakewords)
+            exec "$PROJECT_DIR/purple_service.sh" wake-words
+            exit 0
+            ;;
         --help|-h)
-            echo "Purple AI - Run Script (Single Instance)"
+            echo "Purple AI - Voice-Controlled AI Assistant"
             echo ""
             echo "Usage: ./run.sh [option]"
             echo ""
             echo "Options:"
-            echo "  (no args)    Run Purple AI"
+            echo "  (no args)    Run Purple AI (foreground)"
+            echo "  background   Run in background (always listening)"
             echo "  stop         Stop running instance"
             echo "  clean        Clean temporary files"
             echo "  diagnose     Run system diagnostics"
+            echo "  service      Background service control"
+            echo "  wake-words   Show all active wake words"
             echo "  --help       Show this help"
+            echo ""
+            echo "Service commands:"
+            echo "  ./run.sh service start      Start background service"
+            echo "  ./run.sh service stop       Stop background service"
+            echo "  ./run.sh service status     Show service status"
+            echo "  ./run.sh service install    Auto-start on login"
+            echo "  ./run.sh service logs       Watch live logs"
+            echo ""
+            echo "Always listening for wake words:"
+            echo "  purple, hey purple, hello purple"
+            echo "  ai, hey ai, computer, jarvis"
+            echo "  wake up, listen, hello, hey"
             exit 0
             ;;
     esac

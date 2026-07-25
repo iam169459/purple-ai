@@ -289,7 +289,7 @@ class PurpleBrain:
             try:
                 with open(self.consciousness_file, 'r') as f:
                     return json.load(f)
-            except:
+            except Exception:
                 return self._default_consciousness()
         return self._default_consciousness()
     
@@ -315,7 +315,7 @@ class PurpleBrain:
             try:
                 with open(self.knowledge_file, 'r') as f:
                     return json.load(f)
-            except:
+            except Exception:
                 return {"facts": {}, "skills": {}, "patterns": {}, "learned": []}
         return {"facts": {}, "skills": {}, "patterns": {}, "learned": []}
     
@@ -324,7 +324,7 @@ class PurpleBrain:
             try:
                 with open(self.goals_file, 'r') as f:
                     return json.load(f)
-            except:
+            except Exception:
                 return {"active": [], "completed": [], "dreams": []}
         return {"active": [], "completed": [], "dreams": []}
     
@@ -333,7 +333,7 @@ class PurpleBrain:
             try:
                 with open(self.experiences_file, 'r') as f:
                     return json.load(f)
-            except:
+            except Exception:
                 return {"interactions": [], "lessons": [], "insights": []}
         return {"interactions": [], "lessons": [], "insights": []}
     
@@ -895,7 +895,7 @@ class PurpleBrain:
                 with open(memory_file, 'r') as f:
                     memory = json.load(f)
                     return memory.get("user_name", "friend")
-        except:
+        except Exception:
             pass
         return "friend"
     

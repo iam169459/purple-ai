@@ -11,6 +11,9 @@ psutil
 pytesseract
 Pillow
 
+# Camera access
+opencv-contrib-python>=4.8.0
+
 # Offline speech recognition
 vosk==0.3.44
 

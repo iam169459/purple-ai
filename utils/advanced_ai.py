@@ -96,7 +96,7 @@ class AdvancedAI:
             try:
                 with open(filepath, 'r') as f:
                     return json.load(f)
-            except:
+            except Exception:
                 return default
         return default
     

@@ -205,7 +205,7 @@ class EmotionEngine:
             try:
                 with open(self.emotion_file, 'r') as f:
                     return json.load(f)
-            except:
+            except Exception:
                 return self._default_data()
         return self._default_data()
     
@@ -222,7 +222,7 @@ class EmotionEngine:
         try:
             with open(self.emotion_file, 'w') as f:
                 json.dump(self.data, f, indent=2)
-        except:
+        except Exception:
             pass
     
     def detect_emotion(self, text: str) -> dict:

@@ -192,17 +192,15 @@ class Config:
     AUDIO_DYNAMIC_ENERGY = True
     AUDIO_PAUSE_THRESHOLD = 0.8
     
-    # TTS settings
-    TTS_RATE = 180
-    TTS_VOLUME = 0.9
-    TTS_PITCH = 1.2
+    # TTS settings - Natural speech
+    TTS_RATE = 170
+    TTS_VOLUME = 0.85
+    TTS_PITCH = 1.0
     TTS_GIRL_VOICE_PREFERENCES = [
-        'female', 
-        'woman', 
-        'girl', 
         'samantha',
+        'kathy',
         'karen',
-        'moira'
+        'moira',
     ]
     TTS_BANGLA_VOICE_PREFERENCES = [
         'bangla',
@@ -213,13 +211,36 @@ class Config:
         'tanvi'
     ]
     
-    # Voice Control settings
-    WAKE_WORDS = ['purple', 'hey purple', 'hello purple', 'okay purple', 'ok purple', 'hi purple', 'a purple', 'ai', 'hey ai']
-    WAKE_WORDS_BANGLA = ['পার্পেল', 'হে পার্পেল', 'পার্পেল হেল্প', 'হেল্প', 'পার্পেল আই']
+    # Voice Control settings - All wake words always active
+    WAKE_WORDS = [
+        'purple', 'hey purple', 'hello purple', 'okay purple', 'ok purple', 
+        'hi purple', 'a purple', 'ai', 'hey ai', 'hello ai', 'hi ai',
+        'computer', 'hey computer', 'assistant', 'hey assistant',
+        'jarvis', 'hey jarvis', 'alexa', 'hey alexa', 'siri',
+        'computer', 'hey computer', 'wake up', 'listen',
+        'can you hear me', 'are you there', 'are you listening',
+        'excuse me', 'pardon me', 'yo', 'hey', 'hello',
+        'morning', 'afternoon', 'evening', 'night'
+    ]
+    WAKE_WORDS_BANGLA = [
+        'পার্পেল', 'হে পার্পেল', 'পার্পেল হেল্প', 'হেল্প', 'পার্পেল আই',
+        'কম্পিউটার', 'হে কম্পিউটার', 'সহায়তা', 'হে সহায়তা',
+        'জার্ভিস', 'হে জার্ভিস', 'ওয়েক আপ', 'শোনো',
+        'তুমি কি শুনতে পারো', 'তুমি কি আছো', 'আছো কি',
+        'দয়া করে', 'কি হলো', 'নমস্কার', 'হ্যালো',
+        'সুপ্রভাত', 'শুভ অপরাহ্ন', 'শুভ সন্ধ্যা', 'শুভ রাত্রি'
+    ]
     CONTINUOUS_LISTENING = True
+    ALWAYS_ACTIVE = True  # Always listening in background
+    BACKGROUND_MODE = True  # Run as background service
     CONFIRMATION_REQUIRED = False
     COMMAND_TIMEOUT = 10
     MAX_COMMAND_RETRIES = 2
+    
+    # Background service settings
+    AUTO_START = True  # Auto-start on boot
+    WATCHDOG_ENABLED = True  # Restart if crashed
+    HEARTBEAT_INTERVAL = 30  # Check every 30 seconds
 
     # Command settings - English
     COMMANDS = {
@@ -235,6 +256,39 @@ class Config:
         'fix_bugs': ['fix bugs', 'auto fix', 'fix code', 'repair code'],
         'learn': ['learn about', 'tell me about', 'what is', 'explain', 'define'],
         'switch_language': ['switch to bangla', 'bangla', 'bengali', 'বাংলায় পরিবর্তন'],
+        'camera_open': ['open camera', 'start camera', 'turn on camera', 'camera on'],
+        'camera_close': ['close camera', 'stop camera', 'turn off camera', 'camera off'],
+        'camera_photo': ['take photo', 'take picture', 'capture photo', 'snap'],
+        'look_at_me': ['look at me', 'see me', 'look at my face', 'can you see me', 'do you see me'],
+        'recognize_faces': ['recognize faces', 'who is this', 'who are you', 'identify', 'who do you see'],
+        'learn_face': ['learn my face', 'remember my face', 'teach me face', 'know my face', 'remember me'],
+        'forget_face': ['forget my face', 'forget face', 'remove face'],
+        'known_faces': ['known faces', 'who do you know', 'list faces'],
+        'start_recognition': ['start recognition', 'greet me', 'say hello'],
+        'camera_info': ['camera info', 'camera status', 'which camera'],
+        'db_stats': ['database stats', 'db stats', 'brain stats', 'how much do you know'],
+        'db_search': ['search memory', 'what do you know about'],
+        'db_save_memory': ['save to memory', 'remember this', 'store this'],
+        'db_get_memory': ['recall', 'what do you remember about'],
+        'db_facts': ['show facts', 'list facts', 'all facts'],
+        'db_conversations': ['show conversations', 'chat history'],
+        'db_goals': ['show goals', 'list goals', 'my goals'],
+        'db_add_goal': ['add goal', 'set goal', 'new goal'],
+        'db_notes': ['show notes', 'daily notes', 'my notes'],
+        'db_add_note': ['add note', 'take note', 'write note'],
+        'db_backup': ['backup database', 'backup brain'],
+        'play_music': ['play music', 'play song', 'play on youtube', 'play on spotify'],
+        'pause_music': ['pause', 'pause music', 'stop music'],
+        'resume_music': ['resume', 'resume music', 'continue playing'],
+        'next_track': ['next', 'next song', 'skip', 'next track'],
+        'prev_track': ['previous', 'previous song', 'go back'],
+        'stop_music': ['stop', 'stop all', 'turn off music'],
+        'what_playing': ["what's playing", 'what song', 'now playing'],
+        'mood_happy': ['are you happy', 'how do you feel'],
+        'mood_sad': ['are you sad', 'cheer up'],
+        'mood_angry': ['are you angry', 'calm down'],
+        'mood_excited': ['are you excited', 'you seem excited'],
+        'show_object': ['what is this', 'what do you see', 'look at this'],
     }
     
     # Command settings - Bangla (comprehensive)
@@ -277,6 +331,39 @@ class Config:
         'emotion': ['খুশি', 'দুঃখিত', 'রাগ', 'ভয়', 'অবাক'],
         'question_words': ['কেন', 'কিভাবে', 'কখন', 'কোথায়', 'কে', 'কী'],
         'switch_language': ['switch to english', 'english', 'ইংরেজিতে পরিবর্তন', 'ইংরেজি'],
+        'camera_open': ['ক্যামেরা খোলো', 'ক্যামেরা চালু করো', 'ক্যামেরা অন'],
+        'camera_close': ['ক্যামেরা বন্ধ করো', 'ক্যামেরা বন্ধ'],
+        'camera_photo': ['ছবি তোলো', 'ফটো তোলো', 'ক্যামেরায় ছবি'],
+        'look_at_me': ['আমাকে দেখো', 'আমার দিকে তাকাও', 'তুমি কি আমাকে দেখতে পারো'],
+        'recognize_faces': ['চেনো', 'কে এটা', 'কে তুমি', 'চিনতে পারো', 'কাকে দেখছো'],
+        'learn_face': ['আমার মুখ শেখো', 'আমাকে মনে রাখো', 'আমার মুখ মনে রাখো'],
+        'forget_face': ['আমার মুখ ভুলে যাও', 'মুখ ভুলে যাও'],
+        'known_faces': ['কাদের চিনো', 'কে কে আছো', 'চেনার তালিকা'],
+        'start_recognition': ['চেনা শুরু করো', 'অভিবাদন করো'],
+        'camera_info': ['ক্যামেরার তথ্য', 'ক্যামেরার অবস্থা'],
+        'db_stats': ['ডাটাবেস স্ট্যাটস', 'ব্রেইন স্ট্যাটস', 'তুমি কত জানো'],
+        'db_search': ['মনে খুঁজো', 'মনে আছে কি'],
+        'db_save_memory': ['মনে রাখো', 'স্মরণ করো', 'মনে আছে'],
+        'db_get_memory': ['মনে আছে কি', 'কী মনে আছে'],
+        'db_facts': ['তথ্য দেখাও', 'শিখো'],
+        'db_conversations': ['কথাবার্তা', 'চ্যাট ইতিহাস'],
+        'db_goals': ['গোল দেখাও', 'টার্গেট'],
+        'db_add_goal': ['গোল যোগ করো', 'নতুন গোল'],
+        'db_notes': ['নোট দেখাও', 'দৈনিক নোট'],
+        'db_add_note': ['নোট যোগ করো', 'নোট লেখো'],
+        'db_backup': ['ডাটাবেস ব্যাকআপ'],
+        'play_music': ['গান বাজাও', 'গান চালাও', 'মিউজিক প্লে'],
+        'pause_music': ['পজ', 'গান থামাও', 'মিউজিক বন্ধ'],
+        'resume_music': ['রিজিউম', 'চালিয়ে যাও', 'আবার চালাও'],
+        'next_track': ['পরের', 'পরের গান', 'স্কিপ'],
+        'prev_track': ['আগের', 'আগের গান', 'ফিরে যাও'],
+        'stop_music': ['বন্ধ', 'সব বন্ধ', 'মিউজিক বন্ধ'],
+        'what_playing': ['কী বাজছে', 'কোন গান', 'এখন কী'],
+        'mood_happy': ['তুমি কি খুশি', 'কেমন আছো'],
+        'mood_sad': ['তুমি কি দুঃখিত', 'হাসো'],
+        'mood_angry': ['তুমি কি রাগী', 'শান্ত হও'],
+        'mood_excited': ['তুমি কি উত্তেজিত'],
+        'show_object': ['এটা কী', 'কী দেখতে পাচ্ছো', 'এটার দিকে তাকাও'],
     }
     
     # Advanced Personality Settings - Sharp and Witty
