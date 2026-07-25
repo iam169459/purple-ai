@@ -63,76 +63,127 @@ class EmotionalState(Enum):
     WORRIED = "worried"
 
 class OfflineAI:
+    # Class-level caches (shared across instances)
+    _response_cache = {}
+    _cache_max_size = 200
+    _handler_cache = {}
+    _command_patterns = frozenset([
+        'time', 'date', 'help', 'exit', 'quit', 'goodbye', 'bye',
+        'hello', 'hi', 'hey', 'joke', 'fact', 'mood', 'who am i',
+        'volume up', 'volume down', 'mute', 'unmute', 'screenshot',
+        'play', 'pause', 'resume', 'stop', 'next', 'previous'
+    ])
+
     def __init__(self, tts_engine=None):
+        # Lazy-loaded heavy modules (loaded on first use)
+        self._lazy_modules = {}
+        self._module_load_lock = threading.Lock()
+        
+        # Core lightweight modules (always loaded)
         self.tts_engine = tts_engine
         self.memory_manager = MemoryManager()
-        self.response_generator = ResponseGenerator()
-        self.learning_engine = LearningEngine()
-        self.code_analyzer = CodeAnalyzer()
-        self.thinking_engine = ThinkingEngine()
-        self.training_engine = TrainingEngine()
-        self.system_controller = SystemController()
-        self.screen_vision = ScreenVision()
-        self.system_monitor = SystemMonitor()
-        self.personal_assistant = PersonalAssistant()
-        self.toolchain = Toolchain()
-        self.self_thinking_engine = SelfThinkingEngine()
-        self.internet_learner = InternetLearner()
-        self.account_manager = AccountManager()
-        self.web_search = WebSearch()
-        self.screen_awareness = ScreenAwareness()
-        self.emotion_engine = EmotionEngine()
-        self.brain = PurpleBrain()
-        self.advanced_ai = AdvancedAI()
-        self.mood_shifter = MoodShifter()
-        self.camera_access = CameraAccess()
-        self.purple_db = PurpleDatabase()
-        self.media_controller = MediaController()
-        self.web_media = WebMediaEngine()
-        self.autonomous_engine = AutonomousEngine()
         self.memory = self.memory_manager.load_memory()
-        
-        self.conversation_stats = {
-            'commands_processed': 0,
-            'topics_learned': 0,
-            'bugs_found': 0,
-            'bugs_fixed': 0,
-            'questions_asked': 0,
-            'knowledge_gained': 0,
-            'conversation_length': 0,
-            'training_sessions': 0,
-            'improvements_made': 0,
-            'user_mood': EmotionalState.NEUTRAL,
-            'ai_mood': EmotionalState.HAPPY
-        }
-        
         self.conversation_context = {
             'current_topic': None,
             'recent_topics': [],
-            'conversation_flow': [],
-            'pending_question': None,
             'awaiting_answer': False,
-            'last_interaction_quality': None
+            'last_interaction': 0
         }
-        
-        self.personality_traits = {
-            'name': 'Purple',
-            'curiosity': 0.7,
-            'friendliness': 0.9,
-            'helpfulness': 0.8,
-            'thoughtfulness': 0.75,
-            'learning_rate': 0.1,
-            'adaptability': 0.8
+        self.conversation_stats = {
+            'commands_processed': 0, 'topics_learned': 0, 'bugs_found': 0,
+            'bugs_fixed': 0, 'questions_asked': 0, 'knowledge_gained': 0,
+            'conversation_length': 0, 'training_sessions': 0, 'improvements_made': 0
         }
-        
-        self.auto_train_interval = 10
         self.conversation_counter = 0
-        self.auto_improve_interval = 5  # Auto-improve every 5 commands
+        self.auto_train_interval = 10
+        self.auto_improve_interval = 5
         self.last_auto_improve = 0
+        self._last_command_time = 0
+        self._min_command_interval = 0.05  # 50ms minimum
         
-        logger.info("AI Engine with Auto-Training initialized!")
+        # Fast-path handler registry (direct method references)
+        self._fast_handlers = self._build_fast_handler_map()
+        
+        logger.info("Optimized AI Engine initialized!")
         self._start_background_improvement()
         self._start_screen_awareness()
+
+    def _build_fast_handler_map(self):
+        """Build direct method reference map for O(1) handler lookup"""
+        return {
+            '_tell_time': self._tell_time,
+            '_tell_date': self._tell_date,
+            '_show_help': self._show_help,
+            '_greet_user': self._greet_user,
+            '_show_training_stats': self._show_training_stats,
+            '_manual_train': self._manual_train,
+            '_show_system_info': self._show_system_info,
+            '_show_installed_apps': self._show_installed_apps,
+            '_show_running_apps': self._show_running_apps,
+            '_handle_active_window': self._handle_active_window,
+            '_handle_list_tabs': self._handle_list_tabs,
+            '_handle_volume_up': self._handle_volume_up,
+            '_handle_volume_down': self._handle_volume_down,
+            '_handle_mute': self._handle_mute,
+            '_handle_unmute': self._handle_unmute,
+            '_handle_screenshot': self._handle_screenshot,
+            '_handle_lock_screen': self._handle_lock_screen,
+            '_handle_empty_trash': self._handle_empty_trash,
+            '_handle_shutdown': self._handle_shutdown,
+            '_handle_restart': self._handle_restart,
+            '_handle_sleep': self._handle_sleep,
+            '_handle_disk_space': self._handle_disk_space,
+            '_handle_battery': self._handle_battery,
+            '_handle_network': self._handle_network,
+            '_handle_see_screen': self._handle_see_screen,
+            '_handle_read_screen': self._handle_read_screen,
+            '_handle_describe_screen': self._handle_describe_screen,
+            '_tell_joke': self._tell_joke,
+            '_handle_self_analysis': self._handle_self_analysis,
+            '_handle_auto_improve': self._handle_auto_improve,
+            '_handle_what_am_i_doing': self._handle_what_am_i_doing,
+            '_handle_watch_screen': self._handle_watch_screen,
+            '_handle_mood_check': self._handle_mood_check,
+            '_handle_camera_open': self._handle_camera_open,
+            '_handle_camera_close': self._handle_camera_close,
+            '_handle_camera_photo': self._handle_camera_photo,
+            '_handle_look_at_me': self._handle_look_at_me,
+            '_handle_recognize_faces': self._handle_recognize_faces,
+            '_handle_known_faces': self._handle_known_faces,
+            '_handle_start_recognition': self._handle_start_recognition,
+            '_handle_camera_info': self._handle_camera_info,
+            '_handle_db_stats': self._handle_db_stats,
+            '_handle_db_facts': self._handle_db_facts,
+            '_handle_db_conversations': self._handle_db_conversations,
+            '_handle_db_goals': self._handle_db_goals,
+            '_handle_db_notes': self._handle_db_notes,
+            '_handle_db_backup': self._handle_db_backup,
+            '_handle_db_clear_old': self._handle_db_clear_old,
+            '_handle_pause_music': self._handle_pause_music,
+            '_handle_resume_music': self._handle_resume_music,
+            '_handle_next_track': self._handle_next_track,
+            '_handle_prev_track': self._handle_prev_track,
+            '_handle_stop_music': self._handle_stop_music,
+            '_handle_what_playing': self._handle_what_playing,
+            '_handle_mood_happy': self._handle_mood_happy,
+            '_handle_mood_sad': self._handle_mood_sad,
+            '_handle_mood_angry': self._handle_mood_angry,
+            '_handle_mood_excited': self._handle_mood_excited,
+            '_who_am_i': self._who_am_i,
+            '_exit_command': self._exit_command,
+            '_set_name': self._set_name,
+            '_handle_remember_command': self._handle_remember_command,
+            '_handle_set_mood': self._handle_set_mood,
+            '_handle_learn_face': self._handle_learn_face,
+            '_handle_forget_face': self._handle_forget_face,
+            '_handle_db_search': self._handle_db_search,
+            '_handle_db_save_memory': self._handle_db_save_memory,
+            '_handle_db_get_memory': self._handle_db_get_memory,
+            '_handle_db_add_goal': self._handle_db_add_goal,
+            '_handle_db_add_note': self._handle_db_add_note,
+            '_handle_play_music': self._handle_play_music,
+            '_handle_show_object': self._handle_show_object,
+        }
     
     def _greet_user(self):
         name = self.memory.get('user_name', 'friend')
@@ -501,120 +552,834 @@ class OfflineAI:
             except Exception:
                 print(f"AI: {text}")
     
+    def _get_lazy_module(self, module_name: str):
+        """Lazy-load heavy modules on first access"""
+        if module_name in self._lazy_modules:
+            return self._lazy_modules[module_name]
+        
+        with self._module_load_lock:
+            if module_name in self._lazy_modules:
+                return self._lazy_modules[module_name]
+            
+            if module_name == 'response_generator':
+                from utils.response_generator import ResponseGenerator
+                module = ResponseGenerator()
+            elif module_name == 'learning_engine':
+                from utils.learning_engine import LearningEngine
+                module = LearningEngine()
+            elif module_name == 'code_analyzer':
+                from utils.code_analyzer import CodeAnalyzer
+                module = CodeAnalyzer()
+            elif module_name == 'thinking_engine':
+                from utils.thinking_engine import ThinkingEngine
+                module = ThinkingEngine()
+            elif module_name == 'training_engine':
+                from utils.training_engine import TrainingEngine
+                module = TrainingEngine()
+            elif module_name == 'system_controller':
+                from utils.system_controller import SystemController
+                module = SystemController()
+            elif module_name == 'screen_vision':
+                from utils.screen_vision import ScreenVision
+                module = ScreenVision()
+            elif module_name == 'system_monitor':
+                from utils.system_monitor import SystemMonitor
+                module = SystemMonitor()
+            elif module_name == 'personal_assistant':
+                from utils.personal_assistant import PersonalAssistant
+                module = PersonalAssistant()
+            elif module_name == 'toolchain':
+                from utils.toolchain import Toolchain
+                module = Toolchain()
+            elif module_name == 'self_thinking_engine':
+                from utils.self_thinking_engine import SelfThinkingEngine
+                module = SelfThinkingEngine()
+            elif module_name == 'internet_learner':
+                from utils.internet_learning import InternetLearner
+                module = InternetLearner()
+            elif module_name == 'account_manager':
+                from utils.account_manager import AccountManager
+                module = AccountManager()
+            elif module_name == 'web_search':
+                from utils.web_search import WebSearch
+                module = WebSearch()
+            elif module_name == 'screen_awareness':
+                from utils.screen_awareness import ScreenAwareness
+                module = ScreenAwareness()
+            elif module_name == 'emotion_engine':
+                from utils.emotion_engine import OptimizedEmotionEngine as EmotionEngine
+                module = EmotionEngine()
+            elif module_name == 'purple_brain':
+                from utils.purple_brain import PurpleBrain
+                module = PurpleBrain()
+            elif module_name == 'advanced_ai':
+                from utils.advanced_ai import AdvancedAI
+                module = AdvancedAI()
+            elif module_name == 'mood_shifter':
+                from utils.mood_system import OptimizedMoodShifter as MoodShifter, Mood
+                module = MoodShifter()
+            elif module_name == 'camera_access':
+                from utils.camera_access import CameraAccess
+                module = CameraAccess()
+            elif module_name == 'purple_db':
+                from utils.purple_database import PurpleDatabase
+                module = PurpleDatabase()
+            elif module_name == 'media_controller':
+                from utils.media_controller import MediaController
+                module = MediaController()
+            elif module_name == 'web_media':
+                from utils.web_media import WebMediaEngine
+                module = WebMediaEngine()
+            elif module_name == 'autonomous_engine':
+                from utils.autonomous_engine import AutonomousEngine
+                module = AutonomousEngine()
+            elif module_name == 'memory_manager':
+                from utils.memory_manager import MemoryManager
+                module = MemoryManager()
+            else:
+                return None
+            
+            self._lazy_modules[module_name] = module
+            return module
+
+    def __getattr__(self, name: str):
+        """Lazy-load heavy modules on attribute access"""
+        lazy_map = {
+            'response_generator': 'response_generator',
+            'learning_engine': 'learning_engine',
+            'code_analyzer': 'code_analyzer',
+            'thinking_engine': 'thinking_engine',
+            'training_engine': 'training_engine',
+            'system_controller': 'system_controller',
+            'screen_vision': 'screen_vision',
+            'system_monitor': 'system_monitor',
+            'personal_assistant': 'personal_assistant',
+            'toolchain': 'toolchain',
+            'self_thinking_engine': 'self_thinking_engine',
+            'internet_learner': 'internet_learner',
+            'account_manager': 'account_manager',
+            'web_search': 'web_search',
+            'screen_awareness': 'screen_awareness',
+            'emotion_engine': 'emotion_engine',
+            'brain': 'purple_brain',
+            'advanced_ai': 'advanced_ai',
+            'mood_shifter': 'mood_shifter',
+            'camera_access': 'camera_access',
+            'purple_db': 'purple_db',
+            'media_controller': 'media_controller',
+            'web_media': 'web_media',
+            'autonomous_engine': 'autonomous_engine',
+        }
+        if name in lazy_map:
+            module = self._get_lazy_module(lazy_map[name])
+            if module:
+                setattr(self, name, module)
+                return module
+        raise AttributeError(f"'{self.__class__.__name__}' has no attribute '{name}'")
+
+    def _get_cached_response(self, command: str) -> str:
+        """Get cached response for common commands"""
+        cache_key = command.lower().strip()
+        return self._response_cache.get(cache_key)
+
+    def _cache_response(self, command: str, response: str):
+        """Cache response with LRU eviction"""
+        cache_key = command.lower().strip()
+        if len(self._response_cache) >= self._cache_max_size:
+            # Simple FIFO eviction
+            oldest = next(iter(self._response_cache))
+            del self._response_cache[oldest]
+        self._response_cache[cache_key] = response
+
+    def _is_fast_command(self, command: str) -> bool:
+        """Check if command is a known fast-path command"""
+        cmd_lower = command.lower().strip()
+        return any(p in cmd_lower for p in self._command_patterns)
+
     def _process_command(self, command: str) -> bool:
+        """Optimized command processing with fast-path, caching, and lazy loading"""
         if not command:
             return True
         
+        # Rate limiting
+        now = time.time()
+        if now - self._last_command_time < self._min_command_interval:
+            return True
+        self._last_command_time = now
+        
         command_lower = command.lower().strip()
+        if not command_lower:
+            return True
+        
+        # Check cache first for fast commands
+        if self._is_fast_command(command_lower):
+            cached = self._get_cached_response(command_lower)
+            if cached:
+                self._speak_text(cached, fast=True)
+                return True
+        
         self.conversation_stats['commands_processed'] += 1
         self.conversation_stats['conversation_length'] += len(command_lower.split())
         self.conversation_counter += 1
+        self.conversation_context['last_interaction'] = time.time()
         
-        # Auto-shift mood based on conversation
-        old_mood = self.mood_shifter.get_current_mood()
-        self.mood_shifter.shift_mood(command_lower)
-        new_mood = self.mood_shifter.get_current_mood()
+        # Defer mood shift to background (non-blocking)
+        if self.conversation_counter % 3 == 0:  # Only every 3rd command
+            self.mood_shifter.shift_mood(command_lower)
         
-        # Log mood changes
-        if old_mood != new_mood:
-            logger.info(f"Mood auto-shifted: {old_mood.value} -> {new_mood.value}")
+        # Update screen awareness (non-blocking)
+        if self.conversation_counter % 5 == 0:
+            self.screen_awareness.update_user_input()
         
-        # Update screen awareness that user is active
-        self.screen_awareness.update_user_input()
-        
-        # Auto-improve every N commands
-        self._auto_improve_on_command()
+        # Auto-improve less frequently
+        if self.conversation_counter % self.auto_improve_interval == 0:
+            self._auto_improve_on_command()
         
         if self.conversation_context.get('awaiting_answer'):
             self._handle_user_answer(command_lower)
             self.conversation_context['awaiting_answer'] = False
             return True
         
-        # Try command registry first (fast path)
+        # Fast-path: direct handler map lookup (O(1))
         handler_name, matched_pattern = get_command_handler(command_lower)
         if handler_name:
-            handler = getattr(self, handler_name, None)
+            handler = self._fast_handlers.get(handler_name)
             if handler:
                 try:
-                    if handler_name in ['_tell_time', '_tell_date', '_show_help', '_greet_user', '_show_training_stats', 
-                                        '_manual_train', '_show_system_info', '_show_installed_apps', '_show_running_apps',
-                                        '_handle_active_window', '_handle_list_tabs', '_handle_volume_up', '_handle_volume_down',
-                                        '_handle_mute', '_handle_unmute', '_handle_screenshot', '_handle_lock_screen',
-                                        '_handle_empty_trash', '_handle_shutdown', '_handle_restart', '_handle_sleep',
-                                        '_handle_disk_space', '_handle_battery', '_handle_network', '_handle_see_screen',
-                                        '_handle_read_screen', '_handle_describe_screen', '_tell_joke', '_handle_self_analysis',
-                                        '_handle_auto_improve', '_handle_what_am_i_doing', '_handle_watch_screen',
-                                        '_handle_mood_check', '_handle_camera_open', '_handle_camera_close', 
-                                        '_handle_camera_photo', '_handle_look_at_me', '_handle_recognize_faces',
-                                        '_handle_known_faces', '_handle_start_recognition', '_handle_camera_info',
-                                        '_handle_db_stats', '_handle_db_facts', '_handle_db_conversations',
-                                        '_handle_db_goals', '_handle_db_notes', '_handle_db_backup', '_handle_db_clear_old',
-                                        '_handle_pause_music', '_handle_resume_music', '_handle_next_track',
-                                        '_handle_prev_track', '_handle_stop_music', '_handle_what_playing',
-                                        '_handle_mood_happy', '_handle_mood_sad', '_handle_mood_angry', '_handle_mood_excited']:
-                        handler()
-                    elif handler_name in ['_who_am_i']:
+                    # Handle different handler signatures
+                    if handler_name in ('_handle_remember_command', '_handle_set_mood', 
+                                       '_handle_learn_face', '_handle_forget_face',
+                                       '_handle_db_search', '_handle_db_save_memory',
+                                       '_handle_db_get_memory', '_handle_db_add_goal',
+                                       '_handle_db_add_note', '_handle_play_music',
+                                       '_handle_show_object', '_handle_learn_internet',
+                                       '_handle_search_internet', '_handle_browse_website'):
+                        handler(command_lower)
+                    elif handler_name == '_who_am_i':
                         name = self.memory.get('user_name', 'friend')
-                        self._speak_text(f"You are {name}! Nice to meet you!")
-                    elif handler_name in ['_exit_command']:
+                        self._speak_text(f"You are {name}! Nice to meet you!", fast=True)
+                    elif handler_name == '_exit_command':
                         self._auto_train_on_exit()
                         self._goodbye()
                         return False
-                    elif handler_name in ['_set_name']:
+                    elif handler_name == '_set_name':
+                        # Lazy-load response generator
                         response = self.response_generator.generate_response(command_lower, self.memory)
                         self._speak_text(response)
                         self._add_to_memory_from_command(command_lower)
-                    elif handler_name in ['_handle_remember_command']:
-                        response = handler(command_lower)
-                        self._speak_text(response)
-                    elif handler_name in ['_handle_set_mood']:
-                        handler(command_lower)
-                    elif handler_name in ['_handle_learn_face', '_handle_forget_face',
-                                          '_handle_db_search', '_handle_db_save_memory',
-                                          '_handle_db_get_memory', '_handle_db_add_goal',
-                                          '_handle_db_add_note', '_handle_play_music',
-                                          '_handle_show_object']:
-                        handler(command_lower)
                     else:
-                        handler(command_lower)
+                        handler()
+                    
+                    # Cache response for fast commands
+                    if self._is_fast_command(command_lower):
+                        self._cache_response(command_lower, "OK")
+                    
                     return True
                 except Exception as e:
                     logger.error(f"Handler error for {handler_name}: {e}")
         
-        # Fallback to existing if/elif chain for commands not in registry
-        # (keeping existing code for backwards compatibility)
+        # Fallback for unregistered commands - use pattern matching
+        return self._fallback_command_processing(command_lower)
+
+    def _fallback_command_processing(self, command_lower: str) -> bool:
+        """Fallback pattern matching for unregistered commands"""
+        # Quick pattern checks (ordered by frequency)
         
-        # Resume music - play last played or search YouTube
-        if any(pattern in command_lower for pattern in ['resume', 'resume music', 'resume the music', 'play again']):
+        # Resume music
+        if any(p in command_lower for p in ('resume', 'play again')):
             self._handle_play_media(command_lower)
             return True
         
-        # Language switch command
-        switch_lang_patterns = ['switch to bangla', 'bangla', 'bengali', 'বাংলায় পরিবর্তন',
-                                'switch to english', 'english', 'ইংরেজিতে পরিবর্তন']
-        if any(pattern in command_lower for pattern in switch_lang_patterns):
+        # Language switch
+        if any(p in command_lower for p in ('switch to bangla', 'bangla', 'bengali', 'বাংলায় পরিবর্তন', 'switch to english', 'english', 'ইংরেজিতে পরিবর্তন')):
             self._handle_language_switch(command_lower)
             return True
         
-        time_patterns = ['time', 'what time', 'current time']
-        if any(pattern in command_lower for pattern in time_patterns):
+        # Time/Date (fast path)
+        if any(p in command_lower for p in ('time', 'what time', 'current time')):
             self._tell_time()
             return True
-        
-        date_patterns = ['date', 'today', 'what date']
-        if any(pattern in command_lower for pattern in date_patterns):
+        if any(p in command_lower for p in ('date', 'today', 'what date')):
             self._tell_date()
             return True
         
-        if any(pattern in command_lower for pattern in ['analyze code', 'analyse code', 'check code', 'find bugs', 'scan code', 'analyze', 'analyse']):
-            # Check if it's a code analysis command
-            if any(word in command_lower for word in ['code', 'bug', 'issue', 'error', 'file', '.py']):
+        # Code analysis
+        if any(p in command_lower for p in ('analyze code', 'analyse code', 'check code', 'find bugs', 'scan code')):
+            if any(w in command_lower for w in ('code', 'bug', 'issue', 'error', 'file', '.py')):
                 self._handle_code_analysis(command_lower)
                 return True
         
-        if any(pattern in command_lower for pattern in ['fix bugs', 'auto fix', 'repair']):
+        # Auto-fix
+        if any(p in command_lower for p in ('fix bugs', 'auto fix', 'repair')):
             self._handle_auto_fix(command_lower)
             return True
+        
+        # Learning
+        if any(p in command_lower for p in ('learn about', 'tell me about', 'what is', 'explain')):
+            self._handle_learning_command(command_lower)
+            return True
+        
+        # Name setting
+        if any(p in command_lower for p in ('my name is', 'i am', 'call me', 'আমার নাম', 'আমি')):
+            response = self.response_generator.generate_response(command_lower, self.memory)
+            self._speak_text(response)
+            self._add_to_memory_from_command(command_lower)
+            return True
+        
+        # Remember
+        if any(p in command_lower for p in ('remember', 'save this')):
+            response = self._handle_remember_command(command_lower)
+            self._speak_text(response)
+            return True
+        
+        # Opinions
+        if any(p in command_lower for p in ('i think', 'i believe', 'i feel', 'in my opinion')):
+            self._handle_user_opinion(command_lower)
+            return True
+        
+        # User learning
+        if any(p in command_lower for p in ('i learned', 'i discovered', 'i realized')):
+            self._handle_user_learning(command_lower)
+            return True
+        
+        # Training stats
+        if any(p in command_lower for p in ('training stats', 'how are you learning', 'show training')):
+            self._show_training_stats()
+            return True
+        
+        # Manual train
+        if any(p in command_lower for p in ('train now', 'start training', 'auto train')):
+            self._manual_train()
+            return True
+        
+        # Screenshot (before general open)
+        if 'open' in command_lower and 'screenshot' in command_lower:
+            self._handle_screenshot()
+            return True
+        
+        # System control - open
+        if any(p in command_lower for p in ('open ', 'launch ', 'start ')):
+            self._handle_open_app(command_lower)
+            return True
+        
+        # YouTube
+        if any(p in command_lower for p in ('youtube', 'youtub')):
+            self._handle_youtube(command_lower)
+            return True
+        
+        # Play/Search
+        if any(p in command_lower for p in ('play ', 'search ', 'google search', 'গুগল')):
+            if 'play' in command_lower:
+                self._handle_play_media(command_lower)
+            else:
+                self._handle_google_search(command_lower)
+            return True
+        
+        # Browser
+        if any(p in command_lower for p in ('open browser', 'open chrome', 'open safari', 'open firefox', 'ব্রাউজার')):
+            self._handle_open_browser(command_lower)
+            return True
+        
+        # Close apps
+        if any(p in command_lower for p in ('close ', 'quit ', 'exit ')):
+            self._handle_close_app(command_lower)
+            return True
+        
+        # System info
+        if any(p in command_lower for p in ('system info', 'computer info', 'system status', 'কম্পিউটার তথ্য')):
+            self._show_system_info()
+            return True
+        
+        # Installed apps
+        if any(p in command_lower for p in ('installed apps', 'list apps', 'app list', 'all apps')):
+            self._show_installed_apps()
+            return True
+        
+        # Running apps
+        if any(p in command_lower for p in ('running apps', 'running programs', 'active apps', 'open apps', 'what apps are open')):
+            self._show_running_apps()
+            return True
+        
+        # Active window
+        if any(p in command_lower for p in ('what app is this', 'what application', 'which app am i in', 'current app', 'active window')):
+            self._handle_active_window()
+            return True
+        
+        # Browser tabs
+        if any(p in command_lower for p in ('open tabs', 'browser tabs', 'what tabs', 'tabs in safari', 'tabs in chrome', 'list tabs')):
+            self._handle_list_tabs()
+            return True
+        
+        # Volume controls
+        if any(p in command_lower for p in ('volume up', 'louder', 'বাড়াও')):
+            self._handle_volume_up()
+            return True
+        if any(p in command_lower for p in ('volume down', 'quieter', 'কমাও')):
+            self._handle_volume_down()
+            return True
+        if any(p in command_lower for p in ('mute', 'সাউন্ড বন্ধ')):
+            self._handle_mute()
+            return True
+        if any(p in command_lower for p in ('unmute', 'সাউন্ড চালু')):
+            self._handle_unmute()
+            return True
+        if any(p in command_lower for p in ('set volume', 'volume to')):
+            self._handle_set_volume(command_lower)
+            return True
+        
+        # Screenshot
+        if any(p in command_lower for p in ('screenshot', 'screen capture', 'স্ক্রিনশট')):
+            self._handle_screenshot()
+            return True
+        
+        # Lock screen
+        if any(p in command_lower for p in ('lock screen', 'লক স্ক্রিন')):
+            self._handle_lock_screen()
+            return True
+        
+        # Empty trash
+        if any(p in command_lower for p in ('empty trash', 'clear trash', 'বর্জ্য মুছো')):
+            self._handle_empty_trash()
+            return True
+        
+        # Power
+        if any(p in command_lower for p in ('shutdown', 'shut down', 'turn off', 'বন্ধ করো')):
+            self._handle_shutdown()
+            return True
+        if any(p in command_lower for p in ('restart', 'reboot', 'রিস্টার্ট')):
+            self._handle_restart()
+            return True
+        if any(p in command_lower for p in ('sleep', 'suspend', 'ঘুমাও')):
+            self._handle_sleep()
+            return True
+        
+        # File listing
+        if any(p in command_lower for p in ('list files', 'show files', 'files in', 'ফাইল')):
+            self._handle_list_files(command_lower)
+            return True
+        
+        # Disk space
+        if any(p in command_lower for p in ('disk space', 'storage', 'ডিস্ক')):
+            self._handle_disk_space()
+            return True
+        
+        # Battery
+        if any(p in command_lower for p in ('battery', 'batteries', 'ব্যাটারি')):
+            self._handle_battery()
+            return True
+        
+        # Network
+        if any(p in command_lower for p in ('wifi', 'network', 'নেটওয়ার্ক')):
+            self._handle_network()
+            return True
+        
+        # Screen vision
+        if any(p in command_lower for p in ('see screen', 'look at screen', 'what on screen', 'screen content', 'what do you see', 'analyze screen', 'দেখো স্ক্রিন')):
+            self._handle_see_screen()
+            return True
+        if any(p in command_lower for p in ('read screen', 'read text', 'what text', 'screen text', 'স্ক্রিনে কী আছে')):
+            self._handle_read_screen()
+            return True
+        if any(p in command_lower for p in ('take screenshot', 'capture screen', 'স্ক্রিনশট')):
+            self._handle_screenshot()
+            return True
+        if any(p in command_lower for p in ('what apps', 'visible apps', 'which apps', 'কোন অ্যাপ')):
+            self._handle_visible_apps()
+            return True
+        if any(p in command_lower for p in ('find on screen', 'search screen')):
+            self._handle_find_on_screen(command_lower)
+            return True
+        
+        # Screen profiles/buttons/links
+        if any(p in command_lower for p in ('what profile', 'which profile', 'profile on screen', 'show profiles')):
+            self._handle_show_profiles()
+            return True
+        if any(p in command_lower for p in ('what button', 'which button', 'buttons on screen', 'show buttons')):
+            self._handle_show_buttons()
+            return True
+        if any(p in command_lower for p in ('what link', 'which link', 'links on screen', 'show links')):
+            self._handle_show_links()
+            return True
+        
+        # Screen suggestions
+        if any(p in command_lower for p in ('what should i do', 'suggest', 'recommend', 'help me choose')):
+            self._handle_suggest_action()
+            return True
+        if any(p in command_lower for p in ('open profile', 'select profile', 'choose profile')):
+            self._handle_open_profile(command_lower)
+            return True
+        
+        # Personal Assistant - Calendar
+        if any(p in command_lower for p in ('add event', 'create event', 'schedule', 'calendar add')):
+            self._handle_add_event(command_lower)
+            return True
+        if any(p in command_lower for p in ('what events', 'my events', 'calendar', 'schedule today', 'what\'s on')):
+            self._handle_get_events()
+            return True
+        
+        # Reminders
+        if any(p in command_lower for p in ('remind me', 'set reminder', 'add reminder', 'reminder')):
+            self._handle_add_reminder(command_lower)
+            return True
+        if any(p in command_lower for p in ('my reminders', 'what reminders', 'list reminders')):
+            self._handle_get_reminders()
+            return True
+        
+        # Notes
+        if any(p in command_lower for p in ('add note', 'create note', 'take note', 'note down')):
+            self._handle_add_note(command_lower)
+            return True
+        if any(p in command_lower for p in ('my notes', 'what notes', 'list notes', 'show notes')):
+            self._handle_get_notes()
+            return True
+        if any(p in command_lower for p in ('search notes', 'find note')):
+            self._handle_search_notes(command_lower)
+            return True
+        
+        # Tasks
+        if any(p in command_lower for p in ('add task', 'create task', 'new task', 'todo', 'to do')):
+            self._handle_add_task(command_lower)
+            return True
+        if any(p in command_lower for p in ('my tasks', 'what tasks', 'list tasks', 'todo list')):
+            self._handle_get_tasks()
+            return True
+        if any(p in command_lower for p in ('complete task', 'done task', 'finish task')):
+            self._handle_complete_task(command_lower)
+            return True
+        
+        # Contacts
+        if any(p in command_lower for p in ('add contact', 'new contact', 'save contact')):
+            self._handle_add_contact(command_lower)
+            return True
+        if any(p in command_lower for p in ('my contacts', 'what contacts', 'list contacts', 'find contact')):
+            self._handle_get_contacts(command_lower)
+            return True
+        
+        # Shopping
+        if any(p in command_lower for p in ('add to shopping', 'shopping list', 'buy', 'need to buy', 'grocery')):
+            self._handle_add_shopping(command_lower)
+            return True
+        if any(p in command_lower for p in ('what to buy', 'shopping list show', 'my shopping list')):
+            self._handle_get_shopping()
+            return True
+        
+        # Budget
+        if any(p in command_lower for p in ('add expense', 'spent', 'expense', 'cost')):
+            self._handle_add_expense(command_lower)
+            return True
+        if any(p in command_lower for p in ('add income', 'earned', 'income', 'money in')):
+            self._handle_add_income(command_lower)
+            return True
+        if any(p in command_lower for p in ('budget', 'balance', 'how much money', 'finances')):
+            self._handle_get_budget()
+            return True
+        
+        # Habits
+        if any(p in command_lower for p in ('add habit', 'new habit', 'track habit', 'start habit')):
+            self._handle_add_habit(command_lower)
+            return True
+        if any(p in command_lower for p in ('my habits', 'what habits', 'list habits', 'habit streak')):
+            self._handle_get_habits()
+            return True
+        if any(p in command_lower for p in ('complete habit', 'done habit', 'habit done')):
+            self._handle_complete_habit(command_lower)
+            return True
+        
+        # Alarms
+        if any(p in command_lower for p in ('set alarm', 'add alarm', 'wake me', 'alarm')):
+            self._handle_add_alarm(command_lower)
+            return True
+        if any(p in command_lower for p in ('what alarms', 'my alarms', 'list alarms')):
+            self._handle_get_alarms()
+            return True
+        
+        # Calculator
+        if any(p in command_lower for p in ('calculate', 'math', 'what is', 'compute', 'solve')):
+            self._handle_calculate(command_lower)
+            return True
+        
+        # Unit conversion
+        if any(p in command_lower for p in ('convert', 'how many', 'what is in')):
+            self._handle_convert_units(command_lower)
+            return True
+        
+        # Daily summary
+        if any(p in command_lower for p in ('daily summary', 'what did i do', 'today summary', 'summary')):
+            self._handle_daily_summary()
+            return True
+        
+        # Toolchain - File operations
+        if any(p in command_lower for p in ('read file', 'open file', 'show file', 'what is in file')):
+            self._handle_read_file(command_lower)
+            return True
+        if any(p in command_lower for p in ('write file', 'create file', 'save file')):
+            self._handle_write_file(command_lower)
+            return True
+        if any(p in command_lower for p in ('delete file', 'remove file')):
+            self._handle_delete_file(command_lower)
+            return True
+        if any(p in command_lower for p in ('list files', 'show files', 'what files')):
+            self._handle_list_files_tool(command_lower)
+            return True
+        if any(p in command_lower for p in ('copy file', 'move file')):
+            self._handle_copy_move_file(command_lower)
+            return True
+        
+        # Toolchain - System commands
+        if any(p in command_lower for p in ('run command', 'execute', 'terminal', 'shell', 'command prompt')):
+            self._handle_run_command(command_lower)
+            return True
+        if any(p in command_lower for p in ('run python', 'execute python', 'python script')):
+            self._handle_run_python(command_lower)
+            return True
+        
+        # Toolchain - Process management
+        if any(p in command_lower for p in ('list processes', 'running processes', 'what processes')):
+            self._handle_list_processes()
+            return True
+        if any(p in command_lower for p in ('kill process', 'stop process', 'end process')):
+            self._handle_kill_process(command_lower)
+            return True
+        
+        # Toolchain - Browser automation
+        if any(p in command_lower for p in ('open url', 'open website', 'go to website', 'browse')):
+            self._handle_open_url(command_lower)
+            return True
+        if any(p in command_lower for p in ('search google', 'google it', 'look up')):
+            self._handle_search_google(command_lower)
+            return True
+        if any(p in command_lower for p in ('search youtube', 'youtube search', 'find video')):
+            self._handle_search_youtube_tool(command_lower)
+            return True
+        
+        # Toolchain - System info
+        if any(p in command_lower for p in ('system info', 'computer info', 'what is my computer')):
+            self._handle_system_info_tool()
+            return True
+        if any(p in command_lower for p in ('battery status', 'how much battery', 'battery level')):
+            self._handle_battery_status()
+            return True
+        if any(p in command_lower for p in ('network info', 'wifi info', 'ip address')):
+            self._handle_network_info()
+            return True
+        
+        # Toolchain - Clipboard
+        if any(p in command_lower for p in ('copy to clipboard', 'clipboard copy')):
+            self._handle_copy_clipboard(command_lower)
+            return True
+        if any(p in command_lower for p in ('paste clipboard', 'clipboard paste', 'what is in clipboard')):
+            self._handle_paste_clipboard()
+            return True
+        
+        # Toolchain - Text operations
+        if any(p in command_lower for p in ('type text', 'write text', 'keyboard type')):
+            self._handle_type_text(command_lower)
+            return True
+        
+        # Toolchain - Timer
+        if any(p in command_lower for p in ('set timer', 'timer for', 'countdown')):
+            self._handle_set_timer(command_lower)
+            return True
+        if any(p in command_lower for p in ('what time', 'current time', 'time now', 'clock')):
+            self._handle_get_time()
+            return True
+        
+        # Toolchain - Weather
+        if any(p in command_lower for p in ('weather', 'temperature', 'forecast')):
+            self._handle_get_weather(command_lower)
+            return True
+        
+        # Toolchain - Download
+        if any(p in command_lower for p in ('download', 'download file')):
+            self._handle_download(command_lower)
+            return True
+        
+        # Mood commands
+        if any(p in command_lower for p in ('your mood', 'how are you feeling', 'what mood', 'mood check', 'current mood')):
+            self._handle_mood_check()
+            return True
+        if any(p in command_lower for p in ('be happy', 'be excited', 'be calm', 'be silly', 'be focused', 'be sarcastic', 'be playful', 'be energetic', 'be chill', 'be sad', 'cheer up')):
+            self._handle_set_mood(command_lower)
+            return True
+        
+        # Self-thinking
+        if any(p in command_lower for p in ('scan all code', 'analyze project', 'scan project', 'find all bugs', 'check all code')):
+            self._handle_scan_project()
+            return True
+        if any(p in command_lower for p in ('fix all bugs', 'auto fix all', 'repair all', 'fix everything')):
+            self._handle_fix_all_bugs()
+            return True
+        if any(p in command_lower for p in ('analyze yourself', 'self analysis', 'how smart are you', 'your abilities')):
+            self._handle_self_analysis()
+            return True
+        if any(p in command_lower for p in ('think about', 'what do you think', 'analyze this')):
+            self._handle_think_about(command_lower)
+            return True
+        if any(p in command_lower for p in ('auto improve', 'improve yourself', 'get smarter', 'learn from mistakes')):
+            self._handle_auto_improve()
+            return True
+        if any(p in command_lower for p in ('show improvements', 'what did you learn', 'your progress')):
+            self._handle_show_improvements()
+            return True
+        if any(p in command_lower for p in ('set goal', 'add goal', 'new goal', 'i want you to')):
+            self._handle_set_goal(command_lower)
+            return True
+        
+        # Internet learning
+        if any(p in command_lower for p in ('search', 'google', 'find online', 'look up', 'search for')):
+            self._handle_search_internet(command_lower)
+            return True
+        if any(p in command_lower for p in ('learn about', 'teach me about', 'what is', 'tell me about')):
+            self._handle_learn_internet(command_lower)
+            return True
+        if any(p in command_lower for p in ('start learning', 'auto learn', 'learn from internet', 'continuous learning')):
+            self._handle_start_learning()
+            return True
+        if any(p in command_lower for p in ('what do you know', 'your knowledge', 'what have you learned')):
+            self._handle_show_knowledge()
+            return True
+        
+        # Account management
+        if any(p in command_lower for p in ('add account', 'save account', 'add my')):
+            self._handle_add_account(command_lower)
+            return True
+        if any(p in command_lower for p in ('open account', 'open my', 'go to account')):
+            self._handle_open_account(command_lower)
+            return True
+        if any(p in command_lower for p in ('my accounts', 'list accounts', 'all accounts')):
+            self._handle_list_accounts()
+            return True
+        if any(p in command_lower for p in ('remove account', 'delete account', 'forget account')):
+            self._handle_remove_account(command_lower)
+            return True
+        
+        # Database commands
+        if any(p in command_lower for p in ('database stats', 'db stats', 'brain stats', 'how much do you know')):
+            self._handle_db_stats()
+            return True
+        if any(p in command_lower for p in ('search memory', 'search brain', 'find in memory', 'what do you know about')):
+            self._handle_db_search(command_lower)
+            return True
+        if any(p in command_lower for p in ('save to memory', 'remember this', 'store this')):
+            self._handle_db_save_memory(command_lower)
+            return True
+        if any(p in command_lower for p in ('recall', 'what do you remember about', 'get memory')):
+            self._handle_db_get_memory(command_lower)
+            return True
+        if any(p in command_lower for p in ('show facts', 'list facts', 'all facts')):
+            self._handle_db_facts()
+            return True
+        if any(p in command_lower for p in ('show conversations', 'chat history')):
+            self._handle_db_conversations()
+            return True
+        if any(p in command_lower for p in ('show goals', 'list goals', 'my goals')):
+            self._handle_db_goals()
+            return True
+        if any(p in command_lower for p in ('add goal', 'set goal', 'new goal')):
+            self._handle_db_add_goal(command_lower)
+            return True
+        if any(p in command_lower for p in ('show notes', 'daily notes', 'my notes')):
+            self._handle_db_notes()
+            return True
+        if any(p in command_lower for p in ('add note', 'take note', 'write note')):
+            self._handle_db_add_note(command_lower)
+            return True
+        if any(p in command_lower for p in ('backup database', 'backup brain')):
+            self._handle_db_backup()
+            return True
+        if any(p in command_lower for p in ('clear old', 'clean database', 'purge old')):
+            self._handle_db_clear_old()
+            return True
+        
+        # Camera commands
+        if any(p in command_lower for p in ('open camera', 'start camera', 'turn on camera', 'camera on')):
+            self._handle_camera_open()
+            return True
+        if any(p in command_lower for p in ('close camera', 'stop camera', 'turn off camera', 'camera off')):
+            self._handle_camera_close()
+            return True
+        if any(p in command_lower for p in ('take photo', 'take picture', 'capture photo', 'snap')):
+            self._handle_camera_photo()
+            return True
+        if any(p in command_lower for p in ('look at me', 'see me', 'look at my face', 'can you see me', 'do you see me')):
+            self._handle_look_at_me()
+            return True
+        if any(p in command_lower for p in ('recognize faces', 'who is this', 'who are you', 'identify', 'who do you see')):
+            self._handle_recognize_faces()
+            return True
+        if any(p in command_lower for p in ('learn my face', 'remember my face', 'teach me face', 'know my face', 'remember me')):
+            self._handle_learn_face(command_lower)
+            return True
+        if any(p in command_lower for p in ('forget my face', 'forget face', 'remove face')):
+            self._handle_forget_face(command_lower)
+            return True
+        if any(p in command_lower for p in ('known faces', 'who do you know', 'list faces')):
+            self._handle_known_faces()
+            return True
+        if any(p in command_lower for p in ('start recognition', 'greet me', 'say hello')):
+            self._handle_start_recognition()
+            return True
+        if any(p in command_lower for p in ('camera info', 'camera status', 'which camera')):
+            self._handle_camera_info()
+            return True
+        
+        # Media control
+        if any(p in command_lower for p in ('play music', 'play song', 'play on youtube', 'play on spotify')):
+            self._handle_play_music(command_lower)
+            return True
+        if any(p in command_lower for p in ('pause', 'pause music', 'stop music')):
+            self._handle_pause_music()
+            return True
+        if any(p in command_lower for p in ('resume', 'resume music', 'continue playing')):
+            self._handle_resume_music()
+            return True
+        if any(p in command_lower for p in ('next', 'next song', 'skip', 'next track')):
+            self._handle_next_track()
+            return True
+        if any(p in command_lower for p in ('previous', 'previous song', 'go back')):
+            self._handle_prev_track()
+            return True
+        if any(p in command_lower for p in ('stop', 'stop all', 'turn off music')):
+            self._handle_stop_music()
+            return True
+        if any(p in command_lower for p in ("what's playing", 'what song', 'now playing')):
+            self._handle_what_playing()
+            return True
+        
+        # Emotional responses
+        if any(p in command_lower for p in ('are you happy', 'how do you feel', 'your mood')):
+            self._handle_mood_happy()
+            return True
+        if any(p in command_lower for p in ('are you sad', 'you seem sad', 'cheer up')):
+            self._handle_mood_sad()
+            return True
+        if any(p in command_lower for p in ('are you angry', 'you seem mad', 'calm down')):
+            self._handle_mood_angry()
+            return True
+        if any(p in command_lower for p in ('are you excited', 'you seem excited')):
+            self._handle_mood_excited()
+            return True
+        
+        # Show object
+        if any(p in command_lower for p in ('what is this', 'what do you see', 'look at this')):
+            self._handle_show_object(command_lower)
+            return True
+        
+        # Default conversational response (cached)
+        cached = self._get_cached_response(command_lower)
+        if cached:
+            self._speak_text(cached, fast=True)
+            return True
+        
+        # Generate response using lazy-loaded generator
+        response = self.response_generator.generate_response(command_lower, self.memory)
+        self._speak_text(response)
+        
+        # Cache for next time if it's a simple query
+        if len(command_lower) < 50:
+            self._cache_response(command_lower, response)
+        
+        return True
         
         if any(pattern in command_lower for pattern in ['learn about', 'tell me about', 'what is', 'explain']):
             self._handle_learning_command(command_lower)
@@ -1674,15 +2439,31 @@ class OfflineAI:
         self._speak_with_emotion(help_text, 'happy')
     
     def _handle_language_switch(self, command: str):
-        """Handle language switching between English and Bangla"""
-        if 'bangla' in command or 'bengali' in command or 'বাংলা' in command:
+        """Handle language switching between English and Bangla - manual voice switching"""
+        command_lower = command.lower()
+        
+        # Bangla commands to switch to Bangla
+        bangla_triggers = ['bangla', 'bengali', 'বাংলা', 'বাংলায়', 'বাংলা বলো', 'বাংলায় কথা বল', 'বাংলা চালু', 'বাংলা ভাষা']
+        english_triggers = ['english', 'ইংরেজি', 'ইংরেজিতে', 'ইংরেজি বলো', 'ইংরেজিতে কথা বল', 'ইংরেজি চালু', 'ইংরেজি ভাষা']
+        
+        if any(t in command_lower for t in bangla_triggers):
             config.switch_language('bn')
-            self._speak_text("বাংলায় পরিবর্তন করছি। আমি এখন বাংলায় কথা বলতে পারি!")
+            self._speak_text("বাংলায় পরিবর্তন করছি। আমি এখন বাংলায় কথা বলতে পারি!", emotion='happy')
             print("\n✅ Language switched to: বাংলা (Bangla)")
-        else:
+        elif any(t in command_lower for t in english_triggers):
             config.switch_language('en')
-            self._speak_text("Switching to English. I can now speak in English!")
+            self._speak_text("Switching to English. I can now speak in English!", emotion='happy')
             print("\n✅ Language switched to: English")
+        else:
+            # Toggle behavior for generic "switch language" commands
+            if config.CURRENT_LANGUAGE == 'en':
+                config.switch_language('bn')
+                self._speak_text("বাংলায় পরিবর্তন করছি। আমি এখন বাংলায় কথা বলতে পারি!", emotion='happy')
+                print("\n✅ Language switched to: বাংলা (Bangla)")
+            else:
+                config.switch_language('en')
+                self._speak_text("Switching to English. I can now speak in English!", emotion='happy')
+                print("\n✅ Language switched to: English")
     
     def _tell_time(self):
         now = datetime.datetime.now()
