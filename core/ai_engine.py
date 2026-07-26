@@ -39,6 +39,7 @@ from utils.purple_database import PurpleDatabase
 from utils.media_controller import MediaController
 from utils.web_media import WebMediaEngine
 from utils.autonomous_engine import AutonomousEngine
+from utils.llm_support import LLMManager, LLMMessage, LLMProvider
 from core.command_registry import get_command_handler
 import threading
 
@@ -2475,9 +2476,59 @@ class OfflineAI:
         current_date = now.strftime("%B %d, %Y")
         day_name = now.strftime("%A")
         self._speak_immediate(f"Today is {day_name}, {current_date}.")
-    
-    def _handle_code_analysis(self, command: str):
-        # Support both American and British spelling
+
+    # ==================== MISSING HANDLERS ====================
+
+    def _tell_joke(self):
+        """Tell a random joke"""
+        import random
+        jokes = [
+            "Why don't scientists trust atoms? Because they make up everything!",
+            "What did one ocean say to the other ocean? Nothing, they just waved!",
+            "Why did the scarecrow win an award? He was outstanding in his field!",
+            "I'm reading a book about anti-gravity. It's impossible to put down!",
+            "Did you hear about the mathematician who's afraid of negative numbers? He'll stop at nothing to avoid them!",
+            "Why don't eggs tell jokes? They'd crack each other up!",
+            "I wondered why the baseball kept getting bigger. Then it hit me!",
+            "What do you call a fake noodle? An impasta!",
+            "How does a penguin build its house? Igloos it together!",
+            "Why did the bicycle fall over? Because it was two tired!",
+        ]
+        joke = random.choice(jokes)
+        self._speak_text(joke, emotion='playful')
+
+    def _who_am_i(self):
+        name = self.memory.get('user_name', 'friend')
+        self._speak_text(f"You are {name}! Nice to meet you!")
+
+    def _exit_command(self):
+        self._auto_train_on_exit()
+        self._goodbye()
+        return False
+
+    def _set_name(self):
+        import re
+        command = self._get_last_command()
+        match = re.search(r'(?:my name is|i am|call me)\s+(\w+)', command, re.IGNORECASE)
+        if match:
+            name = match.group(1).capitalize()
+            self.memory['user_name'] = name
+            self.memory_manager.save_memory(self.memory)
+            self._speak_text(f"Nice to meet you, {name}! I'll remember that.")
+        else:
+            self._speak_text("I didn't catch your name. Could you tell me again?")
+
+    def _goodbye(self):
+        self._speak_text("Goodbye! I've learned and improved from our conversation!", emotion='happy')
+
+    def _auto_train_on_exit(self):
+        try:
+            self.training_engine.auto_train()
+            self.conversation_stats['training_sessions'] += 1
+        except Exception as e:
+            logger.error(f"Auto-train on exit error: {e}")
+
+    # Support both American and British spelling
         file_match = re.search(r'(?:analyze|analyse|check|scan|look at|read)\s+(.+?)(?:\.py)?$', command)
         if not file_match:
             # Try to find filename in the command
@@ -2487,7 +2538,7 @@ class OfflineAI:
             file_path = file_match.group(1).strip()
             if not file_path.endswith('.py'):
                 file_path += '.py'
-            
+        
             self._speak_text(f"Analyzing {file_path} for bugs...")
             issues = self.code_analyzer.analyze_file(file_path)
             

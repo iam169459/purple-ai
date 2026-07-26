@@ -460,6 +460,11 @@ class OptimizedVoiceController:
 
         return command.strip()
 
+    def set_command_callback(self, callback: Callable[[str], bool]):
+        """Set the callback function for processing commands"""
+        self.command_callback = callback
+        logger.info("Command callback set")
+
     def start_continuous_listening(self) -> bool:
         """Optimized continuous listening with background processing"""
         if self.is_listening:
