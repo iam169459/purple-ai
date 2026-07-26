@@ -524,6 +524,14 @@ class OptimizedMoodShifter:
             "rate": int(170 * (1.0 + (energy - 0.5) * 0.2))  # Scale rate with energy
         }
 
+    def get_mood_prefix(self) -> str:
+        """Get a random prefix for current mood - 35% chance to add prefix"""
+        import random
+        traits = MOOD_TRAITS.get(self.current_mood, MOOD_TRAITS[Mood.HAPPY])
+        if random.random() < 0.35:  # 35% chance to add prefix
+            return random.choice(traits["prefixes"])
+        return ""
+
     def get_mood_report(self) -> dict:
         """Get a comprehensive mood intelligence report"""
         return {
