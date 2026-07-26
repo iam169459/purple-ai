@@ -559,9 +559,18 @@ class OptimizedVoiceController:
             try:
                 # Get command with timeout
                 try:
-                    command, audio = self.command_queue.get(timeout=0.3)
+                    item = self.command_queue.get(timeout=0.3)
                 except queue.Empty:
                     continue
+
+                if not item:
+                    continue
+                
+                # Handle both 2-tuple and 3-tuple (priority)
+                if len(item) == 3:
+                    command, audio, priority = item
+                else:
+                    command, audio = item
 
                 if not command:
                     continue
